@@ -1,93 +1,70 @@
-<div align="center">
-#  Mutabi — SPD Support Platform
-**A digital platform bridging the gap between therapy sessions and home care for children with Sensory Processing Disorder.**
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-In%20Development-yellow.svg)]()
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)]()
-</div>
+# Mutabi — Occupational Therapy Management Platform
+ 
+> Bridging the digital gap in Occupational Therapy by connecting specialists and families through a unified platform.
+ 
 ---
-##  Table of Contents
-- [About the Project](#-about-the-project)
-- [Problem Statement](#-problem-statement)
-- [Key Features](#-key-features)
-- [Target Audience](#-target-audience)
-- [Expected Outcomes](#-expected-outcomes)
-- [Project Structure](#-project-structure)
-- [Getting Started](#-getting-started)
-- [Roadmap](#-roadmap)
-- [Team](#-team)
-- [License](#-license)
+ 
+## What is Mutabi?
+ 
+**Mutabi** is an integrated platform designed for occupational therapy clinics and rehabilitation centers. It consists of two interconnected products:
+ 
+- **Web Dashboard** — built for occupational therapists to create treatment plans, assign exercises, and monitor patient progress remotely.
+- **Mobile App** — built for parents and caregivers to view their child's assigned exercises and log daily completions from home.
+ 
+Together, they ensure that children's sensory exercises continue accurately and consistently outside the clinic — reducing the burden on specialists while keeping treatment on track.
+ 
 ---
-##  About the Project
-**Mutabi** is a unified digital platform designed to support children diagnosed with **Sensory Processing Disorder (SPD)**. The platform provides a structured system of sensory exercises that families can perform at home, while enabling therapists and specialists to remotely monitor patient progress, review exercise performance, and adjust treatment plans as needed.
-The platform can be adopted and branded by hospitals and clinics, offering a customizable visual identity for each healthcare provider while maintaining a unified and consistent care system.
+ 
+## The Problem We're Solving
+ 
+Occupational therapists face a core challenge: they can only directly observe patients during clinic visits. Between sessions, there's no reliable way to monitor whether home exercises are being done correctly or at all. This creates gaps in treatment continuity and limits how many patients a clinic can effectively serve.
+ 
+Mutabi solves this by giving specialists remote visibility and giving parents clear, guided instructions — all in one connected system.
+ 
 ---
-##  Problem Statement
-Many families with children diagnosed with SPD face significant challenges in consistently following therapeutic exercises at home. Although specialists design appropriate therapy plans, parents often struggle to:
-- Fully understand how to perform the exercises correctly.
-- Maintain consistency in applying exercises between therapy sessions.
-- Track and document their child's progress effectively.
-At the same time, therapists and specialists lack an effective system to monitor home exercise adherence between clinic visits, making it difficult to evaluate progress or adjust treatment plans accurately.
-This gap between clinic-based therapy and home implementation reduces the overall effectiveness of treatment. **Mutabi** bridges this gap by connecting families and specialists on a single digital platform.
----
-##  Key Features
-| Feature | Description |
+ 
+## Tech Stack
+ 
+| Layer | Technology |
 |---|---|
-|  **Therapy Plan Management** | Specialists create therapy plans and convert them into structured, step-by-step exercises. |
-|  **Home Exercise Guidance** | Parents receive clear, easy-to-follow instructions for performing sensory exercises with their child. |
-|  **Progress Tracking** | Families can log completed activities and track the child's development over time. |
-|  **Specialist Monitoring** | Therapists can remotely review exercise completion, analyze performance data, and update therapy plans. |
-|  **Communication Support** | An integrated communication channel that strengthens collaboration between families and specialists. |
-|  **Custom Branding** | Each hospital or clinic can customize the platform's visual identity to match their brand. |
+| Web Dashboard | React |
+| Mobile App | React Native |
+| Backend / API | Flask (Python) |
+ 
 ---
-##  Target Audience
-- **Children** diagnosed with Sensory Processing Disorder (SPD).
-- **Parents and family members** responsible for supporting therapy exercises at home.
-- **Therapists and specialists** in hospitals or clinics who design and monitor therapy programs.
----
-##  Expected Outcomes
--  Improved consistency of sensory exercises performed at home.
--  Stronger communication and collaboration between families and specialists.
--  Better data-driven insights into each child's progress and development.
--  Increased effectiveness of therapy programs through continuous follow-up.
--  Scalable adoption across multiple healthcare providers and clinics.
----
-##  Project Structure
-```
-Mutabi-app/
-├── Documentations/
-│   ├── Idea Development Documentation.pdf   # Full project ideation and decision documentation
-│   └── README.md
-└── README.md
-```
----
-##  Getting Started
->  The project is currently in the design and development phase. Setup instructions will be added as the application is built.
-To follow the project's progress:
-1. **Star** this repository to stay updated.
-2. Check the [Issues](../../issues) tab for upcoming milestones.
-3. Refer to the `Documentations/` folder for the full project ideation and planning documentation.
----
-##  Roadmap
-- [x] Team formation and role assignment
-- [x] Research and brainstorming phase
-- [x] Idea evaluation and MVP selection
-- [ ] UI/UX design
-- [ ] Backend development
-- [ ] Frontend development
-- [ ] Integration and testing
-- [ ] Deployment
----
-##  Team
+ 
+## Team
+ 
 | Name | Role |
 |---|---|
-| **Abdullah Mushabab Alsalem** | Project Manager |
-| **Khalid Mohammed Alomari** | Team Member |
-| **Abdulrahman Dhaifallah Alghamdi** | Team Member |
+| Abdulrahman Alghamdi | Project Manager |
+| Abdullah Alsalem | Team Lead |
+| Khalid Alomari | Developer |
+ 
 ---
-##  License
-This project is licensed under the [MIT License](LICENSE).
+ 
+## Project Status
+ 
+| Stage | Description | Status |
+|---|---|:---:|
+| Stage 1 | Team formation & idea generation |  Completed |
+| Stage 2 | Project Charter development |  Completed |
+| Stage 3 | Technical documentation |  In Progress |
+| Stage 4 | MVP Development |  Not Started |
+| Stage 5 | Final presentation & closure |  Not Started |
+ 
 ---
-<div align="center">
-Made with ❤️ to support children with Sensory Processing Disorder and their families.
-</div>
+ 
+## Repository Structure
+ 
+```
+Mutabi-app/
+├── web-dashboard/      # React web app for specialists
+├── mobile-app/         # React Native app for parents
+├── backend/            # Flask API server
+└── docs/               # Project documentation & charter
+```
+ 
+---
+ 
+> This project is developed as part of an academic portfolio program.
