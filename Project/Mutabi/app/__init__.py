@@ -13,4 +13,10 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
 
+    from app.api.v1 import api_v1
+    app.register_blueprint(api_v1)
+
+    from app.models import User, Children, Clinics, Appointments, Exercises
+    from app.models import Exercises_Feedback, Plan_Exercises, Therapy_plans
+
     return app
