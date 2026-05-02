@@ -28,6 +28,8 @@ class Users(BaseModel):
     relationship_type: Mapped[Optional[RelationshipType]] = mapped_column()
     custom_relationship: Mapped[Optional[str]] = mapped_column(String(100))
     is_active: Mapped[bool] = mapped_column(default=False)
+    device_token: Mapped[Optional[str]] = mapped_column(String(255))
+    invitation_token: Mapped[Optional[str]] = mapped_column(String(255))
 
     clinic: Mapped["Clinic"] = relationship(back_populates="users")
     parent_children: Mapped[List["Children"]] = relationship(back_populates="parent")
