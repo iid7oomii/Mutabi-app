@@ -1,7 +1,7 @@
 import pytest
 import uuid
 from app import db
-from app.repositories.UserRepsitories import UserRepositories
+from Project.Mutabi.app.repositories.user_repsitories import UserRepositories
 from app.models.User import Users
 from app.models.EnumUsers import RoleUser
 from app.models.EnumRelationship import RelationshipType

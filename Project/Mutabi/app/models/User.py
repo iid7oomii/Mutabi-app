@@ -1,3 +1,4 @@
+import sqlalchemy
 from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import String, Integer, Boolean, Text, DateTime, func, ForeignKey, event
@@ -6,6 +7,7 @@ from app.models.EnumUsers import RoleUser
 from app.models.EnumRelationship import RelationshipType
 import re
 import bcrypt
+
 
 
 if TYPE_CHECKING:
@@ -23,17 +25,27 @@ class Users(BaseModel):
     email: Mapped[str] = mapped_column(String(255), unique=True)
     phone: Mapped[str] = mapped_column(String(50))
     password: Mapped[str] = mapped_column(String(255))
-    role: Mapped[RoleUser] = mapped_column()
+    role: Mapped[RoleUser] = mapped_column(
+    sqlalchemy.Enum(RoleUser, values_callable=lambda x: [e.value for e in x])
+    )
     specialty: Mapped[Optional[str]] = mapped_column(String(255))
-    relationship_type: Mapped[Optional[RelationshipType]] = mapped_column()
+    relationship_type: Mapped[Optional[RelationshipType]] = mapped_column(
+    sqlalchemy.Enum(RelationshipType, values_callable=lambda x: [e.value for e in x])
+    )
     custom_relationship: Mapped[Optional[str]] = mapped_column(String(100))
     is_active: Mapped[bool] = mapped_column(default=False)
     device_token: Mapped[Optional[str]] = mapped_column(String(255))
     invitation_token: Mapped[Optional[str]] = mapped_column(String(255))
 
     clinic: Mapped["Clinic"] = relationship(back_populates="users")
-    parent_children: Mapped[List["Children"]] = relationship(back_populates="parent")
-    doctor_children: Mapped[List["Children"]] = relationship(back_populates="doctor")
+    parent_children: Mapped[List["Children"]] = relationship(
+        foreign_keys="[Children.parent_id]",
+        back_populates="parent"
+    )
+    doctor_children: Mapped[List["Children"]] = relationship(
+        foreign_keys="[Children.doctor_id]",
+        back_populates="doctor"
+    )
     appointments: Mapped[List["Appointments"]] = relationship(back_populates="doctor")
 
 
@@ -114,13 +126,7 @@ class Users(BaseModel):
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", value):
             raise ValueError("Password must contain at least one special character.")
         
-        password_bytes = value.encode('utf-8')
-
-        salt = bcrypt.gensalt()
-
-        hashed_password_bytes = bcrypt.hashpw(password_bytes, salt)
-
-        return hashed_password_bytes.decode('utf-8')
+        return value
     
 
     @validates('role')

@@ -47,8 +47,14 @@ class UserRepositories:
             .all()
         )
 
+    import bcrypt
+
     @staticmethod
     def create(data: dict) -> Users:
+        if "password" in data:
+            data["password"] = bcrypt.hashpw(
+                data["password"].encode('utf-8'), bcrypt.gensalt()
+            ).decode('utf-8')
         user = Users(**data)
         db.session.add(user)
         db.session.commit()
@@ -59,9 +65,14 @@ class UserRepositories:
         user = db.session.get(Users, user_id)
         if not user:
             return None
+        if "password" in data:
+            data["password"] = bcrypt.hashpw(
+                data["password"].encode('utf-8'), bcrypt.gensalt()
+            ).decode('utf-8')
         for key, value in data.items():
             setattr(user, key, value)
         db.session.commit()
+        db.session.refresh(user)
         return user
 
     @staticmethod
