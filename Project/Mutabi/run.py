@@ -1,10 +1,21 @@
 from app import create_app
-from flask import Flask, jsonify
+from flask import jsonify
 from flasgger import Swagger
 
 app = create_app()
 
-swagger = Swagger(app)
+swagger_config = {
+    "securityDefinitions": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+            "description": "أضف التوكن كذا: Bearer <token>"
+        }
+    }
+}
+
+swagger = Swagger(app, template=swagger_config)
 
 @app.route('/api/test')
 def test():
