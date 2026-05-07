@@ -51,12 +51,15 @@ class Users(BaseModel):
 
     @validates('first_name', 'second_name')
     def validate_first_name(self, key, value):
+        if value is None:
+            raise ValueError(f"The {key} is required")
+
         if not value.strip():
-            raise TypeError(f"The {key} must not be empty")
+            raise ValueError(f"The {key} must not be empty")
         if not isinstance(value, str):
             raise TypeError(f"The {key} must be string")
         if len(value) >= 50:
-            raise TypeError(f"The {key} must be 50 charchter or less")
+            raise ValueError(f"The {key} must be 50 charchter or less")
 
         return value
     
@@ -65,7 +68,7 @@ class Users(BaseModel):
     @validates('email')
     def validate_email(self, key, value):
         if not value.strip():
-            raise ValueError("The email must not be empty")
+            raise ValueError("email is required")
         
         if not isinstance(value, str):
             raise TypeError("The email must be string")
@@ -91,7 +94,7 @@ class Users(BaseModel):
     @validates('phone')
     def validate_phone(self, key, value):
         if not value.strip():
-            raise ValueError("The phone number must be not empty")
+            raise ValueError("phone number is required")
         
         if not isinstance(value, str):
             raise TypeError("The phone number must be string")
@@ -107,7 +110,7 @@ class Users(BaseModel):
     @validates('password')
     def validate_password(self, key, value):
         if not value:
-            raise ValueError("Password must not be empty")
+            raise ValueError("Password is required")
         
         if not isinstance(value, str):
             raise TypeError("Password must be String")
@@ -142,7 +145,7 @@ class Users(BaseModel):
     @validates('specialty')
     def validate_specialty(self, key, value):
         if not value:
-            raise ValueError("Specialty must not be empty")
+            raise ValueError("Specialty is required")
         
         if not isinstance(value, str):
             raise TypeError("Specialty must be string")
