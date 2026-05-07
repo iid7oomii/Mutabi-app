@@ -1,8 +1,9 @@
 # app/api/v1/auth/auth_routes.py
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity, get_jwt
+from flask import Blueprint, request, jsonify, make_response, g
+from flask_jwt_extended import get_jwt_identity, decode_token
 from app.facade.auth_facade import AuthFacade
 from app.api.v1.middleware.role_required import role_required
+from app.repositories.user_repsitories import UserRepositories
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -83,7 +84,17 @@ def admin_signup():
     try:
         data = request.get_json()
         result = AuthFacade.admin_signup(data)
-        return jsonify(result), 201
+
+        response = make_response(jsonify({"role": result["role"]}), 201)
+        response.set_cookie(
+            'token',
+            result["token"],
+            httponly=True,
+            secure=False,
+            samesite='Strict',
+            max_age=86400
+        )
+        return response
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -137,7 +148,16 @@ def login():
     try:
         data = request.get_json()
         result = AuthFacade.login(data["email"], data["password"])
-        return jsonify(result), 200
+        response = make_response(jsonify({"role": result["role"]}, {"token": result["token"]}), 200)
+        response.set_cookie(
+            'token',
+            result["token"],
+            httponly=True,
+            secure=False,
+            samesite='Strict',
+            max_age=86400 
+        )
+        return response
     except ValueError as e:
         return jsonify({"error": str(e)}), 401
 
@@ -201,7 +221,8 @@ def create_doctor():
     """
     try:
         data = request.get_json()
-        data["clinic_id"] = get_jwt()["clinic_id"]
+        claims = g.jwt_claims
+        data["clinic_id"] = claims["clinic_id"]
         result = AuthFacade.create_doctor(data)
         return jsonify(result), 201
     except ValueError as e:
@@ -332,7 +353,17 @@ def parent_signup():
     try:
         data = request.get_json()
         result = AuthFacade.parent_signup(data)
-        return jsonify(result), 201
+
+        response = make_response(jsonify({"role": result["role"]}), 201)
+        response.set_cookie(
+            'token',
+            result["token"],
+            httponly=True,
+            secure=False,
+            samesite='Strict',
+            max_age=86400
+        )
+        return response
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -380,3 +411,33 @@ def reset_password():
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+    
+@auth_bp.route("/me", methods=["GET"])
+def me():
+    try:
+        token = request.cookies.get('token')
+        if not token:
+            return jsonify({"error": "Unauthorized"}), 401
+        claims = decode_token(token)
+
+        user = UserRepositories.get_by_id(claims["sub"])
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        return jsonify({
+            "user_id": claims["sub"],
+            "role": claims["role"],
+            "clinic_id": claims["clinic_id"],
+            "first_name": user.first_name,
+            "second_name": user.second_name,
+        }), 200
+    except Exception:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+
+@auth_bp.route("/logout", methods=["POST"])
+def logout():
+    response = make_response(jsonify({"message": "Logged out"}), 200)
+    response.delete_cookie('token', path='/')
+    response.delete_cookie('role', path='/')
+    return response
