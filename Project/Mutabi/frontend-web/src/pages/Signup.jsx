@@ -109,9 +109,8 @@ export default function Signup() {
             style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
             1
           </div>
-          <div className={`h-1 w-16 rounded `}
-            className="h-1 w-16 rounded"
-            style={{  background: step === 2  ? 'linear-gradient(135deg, #0F4C81, #2c78bb)' : '#e5e7eb' }}/>
+          <div className="h-1 w-16 rounded"
+            style={{ background: step === 2 ? 'linear-gradient(135deg, #0F4C81, #2c78bb)' : '#e5e7eb' }} />
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${step === 2 ? 'text-white' : 'text-gray-400 bg-gray-200'}`}
             style={step === 2 ? { background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' } : {}}>
             2

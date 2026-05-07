@@ -14,12 +14,15 @@ class BaseModel(db.Model):
         primary_key=True,
         default=lambda: str(uuid.uuid4())
     )
-    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+    created_at: Mapped[datetime] = mapped_column(
+        default=datetime.utcnow,
+        nullable=False
+    )
     updated_at: Mapped[Optional[datetime]] = mapped_column(
-    server_default=func.now(),
-    onupdate=func.now(),
-    nullable=True
-)
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+        nullable=True
+    )
 
     def to_dict(self, exclude: list = None) -> dict:
         exclude = exclude or []
