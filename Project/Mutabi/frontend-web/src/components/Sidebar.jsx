@@ -11,7 +11,7 @@ const navItems = [
 ]
 
 const adminItems = [
-  { label: 'Doctors', icon: '🩺', path: '/doctors' },
+  { label: 'Doctors', path: '/doctors' },
 ]
 
 export default function Sidebar() {

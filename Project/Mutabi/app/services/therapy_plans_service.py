@@ -1,4 +1,4 @@
-from app.repositories.TherapyPlansRepository import TherapyPlansRepository
+from app.repositories.therapyplansrepository import TherapyPlansRepository
 from app.repositories.children_repository import ChildrenRepository
 from app.models.EnumStatus import EnumStatus
 from datetime import datetime, date

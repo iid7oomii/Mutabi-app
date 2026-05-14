@@ -1,5 +1,5 @@
 from app.repositories.plan_exercises_repository import PlanExercisesRepository
-from app.repositories.TherapyPlansRepository import TherapyPlansRepository
+from app.repositories.therapyplansrepository import TherapyPlansRepository
 from app.repositories.exercises_repository import ExercisesRepository
 
 

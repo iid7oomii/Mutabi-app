@@ -57,3 +57,7 @@ class ChildrenRepository:
         db.session.delete(child)
         db.session.commit()
         return True
+    
+    @staticmethod
+    def get_by_parent(parent_id: str) -> List[Children]:
+        return db.session.query(Children).filter_by(parent_id=parent_id).all()

@@ -1,9 +1,11 @@
+
 import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import useAuthStore from './store/authStore'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
+import TherapyPlanBuilder from './pages/TherapyPlanBuilder'
 import './App.css'
 
 function ProtectedRoute({ children }) {
@@ -31,6 +33,11 @@ function App() {
       <Route path="/dashboard" element={
         <ProtectedRoute>
           <Dashboard />
+        </ProtectedRoute>
+      } />
+      <Route path="/plans" element={
+        <ProtectedRoute>
+          <TherapyPlanBuilder />
         </ProtectedRoute>
       } />
     </Routes>

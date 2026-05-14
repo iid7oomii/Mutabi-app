@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from app.models.User import Users
     from app.models.Therapy_plans import TherapyPlans
     from app.models.Appointments import Appointments
+    from app.models.Doctor_Notes import DoctorNotes
 
 class Children(BaseModel):
     __tablename__ = 'children'
@@ -26,6 +27,8 @@ class Children(BaseModel):
     doctor: Mapped["Users"] = relationship(foreign_keys='[Children.doctor_id]', back_populates='doctor_children')
     therapy_plan: Mapped[List["TherapyPlans"]] = relationship(back_populates='children')
     appointments: Mapped[List["Appointments"]] = relationship(back_populates='children')
+    doctor_notes: Mapped[List['DoctorNotes']] = relationship(back_populates='child')
+    
 
     @validates('first_name', 'second_name')
     def validate_name(self, key, value):

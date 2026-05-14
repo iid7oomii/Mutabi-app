@@ -3,6 +3,7 @@ from app.models.Therapy_plans import TherapyPlans
 from app.models.EnumStatus import EnumStatus
 from app import db
 from typing import List, Optional
+from app.models.Children import Children
 
 
 class TherapyPlansRepository:
@@ -68,3 +69,7 @@ class TherapyPlansRepository:
         db.session.delete(plan)
         db.session.commit()
         return True
+
+    @staticmethod
+    def get_by_parent(parent_id: str) -> List[Children]:
+        return db.session.query(Children).filter_by(parent_id=parent_id).all()

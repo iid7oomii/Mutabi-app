@@ -20,7 +20,6 @@ def create_app():
     from app.api.v1 import api_v1
     app.register_blueprint(api_v1)
 
-    from app.models import User, Children, Clinics, Appointments, Exercises
-    from app.models import Exercises_Feedback, Plan_Exercises, Therapy_plans
+    from app.models import Exercises_Feedback, Plan_Exercises, Therapy_plans, Doctor_Notes,  User, Children, Clinics, Appointments, Exercises
 
     return app

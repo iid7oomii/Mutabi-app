@@ -148,7 +148,10 @@ def login():
     try:
         data = request.get_json()
         result = AuthFacade.login(data["email"], data["password"])
-        response = make_response(jsonify({"role": result["role"]}, {"token": result["token"]}), 200)
+        response = make_response(jsonify({
+            "role": result["role"],
+            "token": result["token"]
+        }), 200)
         response.set_cookie(
             'token',
             result["token"],

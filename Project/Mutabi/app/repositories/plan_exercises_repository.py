@@ -54,3 +54,33 @@ class PlanExercisesRepository:
             )
             .first()
         )
+    
+    @staticmethod
+    def get_today_by_child(child_id: str) -> List[PlanExercises]:
+        from app.models.Therapy_plans import TherapyPlans
+        from app.models.EnumStatus import EnumStatus
+        from app.models.EnumDays import EnumDays
+        from datetime import datetime
+
+        days_map = {
+            0: EnumDays.MONDAY,
+            1: EnumDays.TUESDAY,
+            2: EnumDays.WEDNESDAY,
+            3: EnumDays.THURSDAY,
+            4: EnumDays.FRIDAY,
+            5: EnumDays.SATURDAY,
+            6: EnumDays.SUNDAY,
+        }
+
+        today_enum = days_map[datetime.today().weekday()]
+
+        return (
+            db.session.query(PlanExercises)
+            .join(TherapyPlans)
+            .filter(
+                TherapyPlans.child_id == child_id,
+                TherapyPlans.status == EnumStatus.Active,
+                PlanExercises.target_days == today_enum
+            )
+            .all()
+        )
