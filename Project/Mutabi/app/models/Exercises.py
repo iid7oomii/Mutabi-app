@@ -36,10 +36,8 @@ class Exercises(BaseModel):
 
     @validates('doctor_media_url')
     def validate_doctor_media_url(self, key, value):
-        if value is None:
-            return value
+        if value is None or value == '':
+            return None
         if not isinstance(value, str):
             raise TypeError("doctor_media_url must be a string")
-        if not re.match(r'^https://.+\.amazonaws\.com/.+', value):
-            raise ValueError("doctor_media_url must be a valid S3 URL")
         return value

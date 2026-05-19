@@ -64,6 +64,9 @@ class AuthService:
 
         temp_password = generate_temp_password()
 
+        if data.get("phone") and UserRepositories.phone_exists(data["phone"]):
+            raise ValueError("Phone number already exists")
+
         user = UserRepositories.create({
             "clinic_id": data["clinic_id"],
             "first_name": data["first_name"],
@@ -85,6 +88,9 @@ class AuthService:
 
         validate_password_strength(data["password"])
 
+        if data.get("phone") and UserRepositories.phone_exists(data["phone"]):
+            raise ValueError("Phone number already exists")
+        
         user = UserRepositories.create({
             "clinic_id": data["clinic_id"],
             "first_name": data["first_name"],
@@ -97,9 +103,13 @@ class AuthService:
             "is_active": True
         })
 
-        token = generate_token(str(user.id), user.role.value, str(user.clinic_id), 24)
-
-        return {"token": token, "role": user.role.value}
+        return {
+            "id": str(user.id),
+            "first_name": user.first_name,
+            "second_name": user.second_name,
+            "email": user.email,
+            "role": user.role.value,
+        }
 
 
     @staticmethod

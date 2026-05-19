@@ -230,3 +230,26 @@ def update_me():
         return jsonify(user.to_dict(exclude=["password"])), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+    
+
+@user_bp.route("/<user_id>/patients", methods=["GET"])
+@role_required("Admin")
+def get_doctor_patients(user_id):
+    try:
+        from app.repositories.children_repository import ChildrenRepository
+        from app.repositories.therapyplansrepository import TherapyPlansRepository
+        from app.repositories.user_repsitories import UserRepositories
+
+        children = ChildrenRepository.get_by_doctor(user_id)
+        result = []
+        for c in children:
+            parent = UserRepositories.get_by_id(str(c.parent_id))
+            active_plan = TherapyPlansRepository.get_active_by_child(str(c.id))
+            result.append({
+                **c.to_dict(),
+                "parent_name": f"{parent.first_name} {parent.second_name}" if parent else "—",
+                "plan_status": active_plan.status.value if active_plan else None,
+            })
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400

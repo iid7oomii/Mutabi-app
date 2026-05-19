@@ -1,19 +1,24 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import useAuthStore from '../store/authStore'
 
 export default function useTherapyPlan() {
   const { user } = useAuthStore()
   const isAdmin = user?.role === 'admin'
+  const location = useLocation()
+  const patient = location.state?.patient
+  const existingPlan = patient?.active_plan
 
   const [form, setForm] = useState({
-    patient_id: '',
-    title: '',
-    start_date: '',
-    end_date: '',
-    status: 'active',
+    patient_id: patient?.id || '',
+    title: existingPlan?.title || '',
+    start_date: existingPlan?.start_date || '',
+    end_date: existingPlan?.end_date || '',
+    status: existingPlan?.status || 'active',
     doctor_id: '',
   })
 
+  const [existingPlanId] = useState(existingPlan?.id || null)
   const [patients, setPatients] = useState([])
   const [exercises, setExercises] = useState([])
   const [doctors, setDoctors] = useState([])
@@ -51,9 +56,20 @@ export default function useTherapyPlan() {
   const isAdded = (id) => selected.some(s => s.exercise.id === id)
 
   const addExercise = (ex) => {
-    if (isAdded(ex.id)) return
-    setSelected(prev => [...prev, { exercise: ex, target_days: 'monday' }])
-  }
+  if (isAdded(ex.id)) return
+  setSelected(prev => [...prev, { 
+    exercise: ex, 
+    target_days: 'monday',
+    reps: null,
+    duration_minutes: null,
+  }])
+	}
+
+	const updateReps = (id, reps) =>
+		setSelected(prev => prev.map(s => s.exercise.id === id ? { ...s, reps } : s))
+
+	const updateDuration = (id, duration_minutes) =>
+		setSelected(prev => prev.map(s => s.exercise.id === id ? { ...s, duration_minutes } : s))
 
   const removeExercise = (id) =>
     setSelected(prev => prev.filter(s => s.exercise.id !== id))
@@ -70,5 +86,7 @@ export default function useTherapyPlan() {
     success, setSuccess,
     isAdmin, isAdded,
     addExercise, removeExercise, updateDay,
+    existingPlanId,
+		updateReps, updateDuration,
   }
 }

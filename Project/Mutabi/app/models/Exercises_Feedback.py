@@ -23,6 +23,7 @@ class ExercisesFeedback(BaseModel):
     pain_level: Mapped[int] = mapped_column(Integer)
     parent_notes: Mapped[Optional[str]] = mapped_column(Text)
     parent_media_url: Mapped[Optional[str]] = mapped_column(String(255))
+    doctor_reply: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     plan_exercise: Mapped['PlanExercises'] = relationship(back_populates='exercises_feedback')
 
@@ -76,3 +77,14 @@ class ExercisesFeedback(BaseModel):
         if not re.match(url_pattern, value):
             raise ValueError("parent_media_url must be a valid URL")
         return value
+    
+
+    @validates('doctor_reply')
+    def validate_doctor_reply(self, key, value):
+        if value is None or value == '':
+            return None
+        if not isinstance(value, str):
+            raise TypeError("doctor_reply must be a string")
+        if len(value) > 1000:
+            raise ValueError("doctor_reply must be 1000 characters or less")
+        return value.strip()

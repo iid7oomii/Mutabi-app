@@ -1,6 +1,10 @@
 from app.repositories.user_repsitories import UserRepositories
 from app.repositories.children_repository import ChildrenRepository
 from app.repositories.clinic_repository import ClinicRepository
+from app.repositories.therapyplansrepository import TherapyPlansRepository
+from app.repositories.appointments_repository import AppointmentsRepository
+from app.repositories.plan_exercises_repository import PlanExercisesRepository
+from app.repositories.feedback_repository import FeedbackRepository
 
 
 class ChildrenService:
@@ -32,15 +36,100 @@ class ChildrenService:
     def get_all(claims: dict) -> list:
         role = claims.get("role", "").lower()
         if role == "admin":
-            return [c.to_dict() for c in ChildrenRepository.get_by_clinic(claims["clinic_id"])]
-        return [c.to_dict() for c in ChildrenRepository.get_by_doctor(claims["sub"])]
+            children = ChildrenRepository.get_by_clinic(claims["clinic_id"])
+        else:
+            children = ChildrenRepository.get_by_doctor(claims["sub"])
+
+        result = []
+        for c in children:
+            parent = UserRepositories.get_by_id(str(c.parent_id))
+            doctor = UserRepositories.get_by_id(str(c.doctor_id))
+            active_plan = TherapyPlansRepository.get_active_by_child(str(c.id))
+
+            result.append({
+                **c.to_dict(),
+                "parent": {
+                    "name": f"{parent.first_name} {parent.second_name}" if parent else "—",
+                    "email": parent.email if parent else "—",
+                    "phone": parent.phone if parent else "—",
+                },
+                "doctor": {
+                    "name": f"{doctor.first_name} {doctor.second_name}" if doctor else "—",
+                },
+                "plan": {
+                    "title": active_plan.title if active_plan else None,
+                    "status": active_plan.status.value if active_plan else None,
+                }
+            })
+        return result
 
     @staticmethod
     def get_by_id(child_id: str) -> dict:
         child = ChildrenRepository.get_by_id(child_id)
         if not child:
             raise ValueError("Child not found")
-        return child.to_dict()
+
+        parent = UserRepositories.get_by_id(str(child.parent_id))
+        doctor = UserRepositories.get_by_id(str(child.doctor_id))
+        active_plan = TherapyPlansRepository.get_active_by_child(child_id)
+        upcoming = AppointmentsRepository.get_upcoming_by_child(child_id)
+
+        active_plan_data = None
+        if active_plan:
+            plan_exercises = PlanExercisesRepository.get_by_therapy_plan(str(active_plan.id))
+            total = len(plan_exercises)
+
+            upcoming_exercises = [
+                {
+                    "title": pe.exercise.title,
+                    "target_days": pe.target_days.value,
+                    "reps": pe.reps,
+                    "duration_minutes": pe.duration_minutes,
+                }
+                for pe in plan_exercises[:3]
+            ]
+
+            completed = 0
+            for pe in plan_exercises:
+                feedbacks = FeedbackRepository.get_by_plan_exercise(str(pe.id))
+                if any(f.completion_status.value == 'completed' for f in feedbacks):
+                    completed += 1
+
+            completion_pct = round((completed / total) * 100) if total > 0 else 0
+
+            active_plan_data = {
+                **active_plan.to_dict(),
+                "upcoming_exercises": upcoming_exercises,
+                "total_exercises": total,
+                "completed_exercises": completed,
+                "completion_pct": completion_pct,
+                "all_exercises": [        # ← أضف هذا
+                    {
+                        "id": str(pe.id),
+                        "title": pe.exercise.title,
+                        "target_days": pe.target_days.value,
+                        "reps": pe.reps,
+                        "duration_minutes": pe.duration_minutes,
+                    }
+                    for pe in plan_exercises
+                ],
+            }
+
+        return {
+            **child.to_dict(),
+            "parent": {
+                "name": f"{parent.first_name} {parent.second_name}" if parent else "—",
+                "email": parent.email if parent else "—",
+                "phone": parent.phone if parent else "—",
+                "relationship_type": parent.relationship_type.value if parent and parent.relationship_type else "—",
+            },
+            "doctor": {
+                "name": f"{doctor.first_name} {doctor.second_name}" if doctor else "—",
+                "specialty": doctor.specialty if doctor else "—",
+            },
+            "active_plan": active_plan_data,
+            "upcoming_appointment": upcoming.to_dict() if upcoming else None,
+        }
 
     @staticmethod
     def update(child_id: str, data: dict) -> dict:

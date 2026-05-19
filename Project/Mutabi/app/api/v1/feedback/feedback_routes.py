@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt
 from app.services.feedback_service import FeedbackService
 from app.api.v1.middleware.role_required import role_required
+from app.repositories.user_repsitories import UserRepositories
+from app.models.EnumUsers import RoleUser
+from flask import Blueprint, request, jsonify, g
 
 feedback_bp = Blueprint("feedback", __name__, url_prefix="/feedback")
 
@@ -224,3 +227,101 @@ def delete_feedback(feedback_id):
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
+    
+
+
+@feedback_bp.route("/child/<child_id>", methods=["GET"])
+@role_required("Admin", "Doctor")
+def get_by_child(child_id):
+		"""
+		Get Feedback By Child
+		---
+		tags:
+		- Feedback
+		security:
+		- Bearer: []
+		parameters:
+		- in: path
+				name: child_id
+				required: true
+				type: string
+		responses:
+		200:
+				description: قائمة الـ feedback
+		"""
+		try:
+				result = FeedbackService.get_by_child(child_id)
+				return jsonify(result), 200
+		except ValueError as e:
+				return jsonify({"error": str(e)}), 404
+            
+
+@feedback_bp.route("/doctor/all", methods=["GET"])
+@role_required("Doctor", "Admin")
+def get_all_by_doctor():
+    try:
+        claims = g.jwt_claims
+        role = claims.get("role", "").lower()
+        
+        if role == "admin":
+            doctors = UserRepositories.get_doctors_by_clinic(claims["clinic_id"])
+            all_feedback = []
+            for doctor in doctors:
+                all_feedback += FeedbackService.get_all_by_doctor(str(doctor.id))
+            return jsonify(all_feedback), 200
+        else:
+            result = FeedbackService.get_all_by_doctor(claims["sub"])
+            return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@feedback_bp.route("/<feedback_id>/reply", methods=["PUT"])
+@role_required("Doctor", "Admin")
+def reply_to_feedback(feedback_id):
+    try:
+        data = request.get_json()
+        result = FeedbackService.update(feedback_id, {"doctor_reply": data["reply"]})
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
+    
+
+@feedback_bp.route("/doctor/progress", methods=["GET"])
+@role_required("Doctor", "Admin")
+def get_doctor_progress():
+    try:
+        claims = g.jwt_claims
+        role = claims.get("role", "").lower()
+
+        if role == "admin":
+            from app.repositories.user_repsitories import UserRepositories
+            doctors = UserRepositories.get_doctors_by_clinic(claims["clinic_id"])
+            
+            adherence_total = 0
+            all_feedback = []
+            pending_plans = 0
+            total_patients = 0
+
+            for doctor in doctors:
+                result = FeedbackService.get_doctor_progress(str(doctor.id))
+                all_feedback += result["feedback"]
+                pending_plans += result["pending_plans"]
+                total_patients += result["total_patients"]
+
+            total = len(all_feedback)
+            completed = sum(1 for f in all_feedback if f["completion_status"] == "completed")
+            adherence_rate = round((completed / total) * 100) if total > 0 else 0
+            all_feedback.sort(key=lambda x: x.get("feedback_date", ""), reverse=True)
+
+            return jsonify({
+                "adherence_rate": adherence_rate,
+                "total_patients": total_patients,
+                "pending_plans": pending_plans,
+                "feedback": all_feedback,
+            }), 200
+        else:
+            result = FeedbackService.get_doctor_progress(claims["sub"])
+            return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400

@@ -16,60 +16,79 @@ export default function TherapyPlanBuilder() {
     success, setSuccess,
     isAdmin, isAdded,
     addExercise, removeExercise, updateDay,
+    existingPlanId,
+    updateReps,
+    updateDuration
   } = useTherapyPlan()
 
-  const handleActivate = async () => {
-    setError(null)
-    if (!form.patient_id) return setError('Please select a patient.')
-    if (!form.title.trim()) return setError('Please enter a plan title.')
-    if (selected.length === 0) return setError('Add at least one exercise from the library.')
+    const handleActivate = async () => {
+        setError(null)
+        if (!form.patient_id) return setError('Please select a patient.')
+        if (!form.title.trim()) return setError('Please enter a plan title.')
+        if (selected.length === 0) return setError('Add at least one exercise from the library.')
 
-    setSaving(true)
-    try {
-      const body = {
-        child_id: form.patient_id,
-        title: form.title.trim(),
-        status: form.status,
-      }
-      if (form.start_date) body.start_date = form.start_date
-      if (form.end_date) body.end_date = form.end_date
+        setSaving(true)
+        try {
+        const body = {
+            child_id: form.patient_id,
+            title: form.title.trim(),
+            status: form.status,
+        }
+        if (form.start_date) body.start_date = form.start_date
+        if (form.end_date) body.end_date = form.end_date
 
-      const planRes = await fetch('/api/v1/therapy-plans', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      if (!planRes.ok) {
-        const e = await planRes.json()
-        throw new Error(e.error || 'Failed to create plan')
-      }
-      const plan = await planRes.json()
-
-      await Promise.all(
-        selected.map(({ exercise, target_days }) =>
-          fetch('/api/v1/plan-exercises', {
+        let plan
+        if (existingPlanId) {
+            const updateRes = await fetch(`/api/v1/therapy-plans/${existingPlanId}`, {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            })
+            if (!updateRes.ok) {
+            const e = await updateRes.json()
+            throw new Error(e.error || 'Failed to update plan')
+            }
+            plan = await updateRes.json()
+        } else {
+            const planRes = await fetch('/api/v1/therapy-plans/', {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              therapy_plan_id: plan.id,
-              exercise_id: exercise.id,
-              target_days,
-              reps: 10,
-            }),
-          })
-        )
-      )
+            body: JSON.stringify(body),
+            })
+            if (!planRes.ok) {
+            const e = await planRes.json()
+            throw new Error(e.error || 'Failed to create plan')
+            }
+            plan = await planRes.json()
+        }
 
-      setSuccess('Plan activated successfully!')
-      setTimeout(() => navigate('/dashboard'), 1600)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
+        await Promise.all(
+            selected.map(({ exercise, target_days, reps, duration_minutes }) =>
+                fetch('/api/v1/plan-exercises/', {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    therapy_plan_id: plan.id,
+                    exercise_id: exercise.id,
+                    target_days,
+                    reps: reps || null,
+                    duration_minutes: duration_minutes || null,
+                }),
+                })
+            )
+            )
+
+        setSuccess('Plan saved successfully!')
+        setTimeout(() => navigate('/dashboard'), 1600)
+        } catch (err) {
+        setError(err.message)
+        } finally {
+        setSaving(false)
+        }
     }
-  }
 
   return (
     <div className="flex h-screen bg-gray-50" dir="ltr">
@@ -103,7 +122,13 @@ export default function TherapyPlanBuilder() {
           <div className="flex gap-6 items-start">
             <div className="flex-1 space-y-5 min-w-0">
               <PlanForm form={form} setForm={setForm} patients={patients} doctors={doctors} isAdmin={isAdmin} />
-              <ExerciseList selected={selected} removeExercise={removeExercise} updateDay={updateDay} />
+              <ExerciseList 
+                selected={selected} 
+                removeExercise={removeExercise} 
+                updateDay={updateDay}
+                updateReps={updateReps}
+                updateDuration={updateDuration}
+                />
             </div>
             <ExerciseLibrary exercises={exercises} loadingData={loadingData} isAdded={isAdded} addExercise={addExercise} />
           </div>

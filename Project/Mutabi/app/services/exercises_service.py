@@ -32,6 +32,20 @@ class ExercisesService:
 
     @staticmethod
     def delete(exercise_id: str) -> dict:
+        from app.integrations.storage import S3StorageClient
+        
+        exercise = ExercisesRepository.get_by_id(exercise_id)
+        if not exercise:
+            raise ValueError("Exercise not found")
+        
+        if exercise.doctor_media_url:
+            try:
+                key = '/'.join(exercise.doctor_media_url.split('/')[-2:])
+                client = S3StorageClient()
+                client.delete(key)
+            except Exception:
+                pass
+        
         deleted = ExercisesRepository.delete(exercise_id)
         if not deleted:
             raise ValueError("Exercise not found")

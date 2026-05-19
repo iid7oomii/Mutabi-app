@@ -1,4 +1,3 @@
-# facades/auth_facade.py
 from app.services.auth_service import AuthService
 from app.services.clinic_service import ClinicService
 

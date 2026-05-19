@@ -23,7 +23,7 @@ const EmptyPlanIcon = () => (
   </svg>
 )
 
-export default function ExerciseList({ selected, removeExercise, updateDay }) {
+export default function ExerciseList({ selected, removeExercise, updateDay, updateReps, updateDuration }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-5">
@@ -45,7 +45,7 @@ export default function ExerciseList({ selected, removeExercise, updateDay }) {
         </div>
       ) : (
         <div className="space-y-2.5">
-          {selected.map(({ exercise, target_days }) => {
+          {selected.map(({ exercise, target_days, reps, duration_minutes }) => {
             const color = exColor(exercise.id)
             return (
               <div key={exercise.id}
@@ -59,6 +59,8 @@ export default function ExerciseList({ selected, removeExercise, updateDay }) {
                   <p className="text-sm font-semibold text-gray-800 truncate">{exercise.title}</p>
                   <p className="text-xs text-gray-400 truncate">{exercise.description}</p>
                 </div>
+
+                {/* Day */}
                 <div className="relative flex-shrink-0">
                   <select value={target_days} onChange={e => updateDay(exercise.id, e.target.value)}
                     className="appearance-none text-xs font-semibold border border-gray-200 rounded-lg
@@ -69,6 +71,27 @@ export default function ExerciseList({ selected, removeExercise, updateDay }) {
                   </select>
                   <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
                 </div>
+
+                {/* Reps */}
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Reps"
+                  value={reps || ''}
+                  onChange={e => updateReps(exercise.id, e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-100 transition"
+                />
+
+                {/* Duration */}
+                <input
+                  type="number"
+                  min="1"
+                  placeholder="Mins"
+                  value={duration_minutes || ''}
+                  onChange={e => updateDuration(exercise.id, e.target.value ? parseInt(e.target.value) : null)}
+                  className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-100 transition"
+                />
+
                 <button onClick={() => removeExercise(exercise.id)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300
                     hover:text-red-400 hover:bg-red-50 transition flex-shrink-0">

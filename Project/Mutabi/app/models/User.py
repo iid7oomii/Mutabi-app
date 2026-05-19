@@ -7,6 +7,7 @@ from app.models.EnumUsers import RoleUser
 from app.models.EnumRelationship import RelationshipType
 import re
 import bcrypt
+from app import db
 
 
 
@@ -90,19 +91,25 @@ class Users(BaseModel):
 
         return value
     
-
     @validates('phone')
     def validate_phone(self, key, value):
-        if not value.strip():
+        if not value or not value.strip():
             raise ValueError("phone number is required")
         
         if not isinstance(value, str):
             raise TypeError("The phone number must be string")
         
         phone_pattern = r'^(05|\+9665|009665)\d{8}$'
-
         if not re.match(phone_pattern, value):
             raise ValueError("Invalid phone number format. Please enter a valid Saudi mobile number.")
+
+
+        existing = db.session.query(Users).filter(
+            Users.phone == value,
+            Users.id != self.id
+        ).first()
+        if existing:
+            raise ValueError("Phone number already exists")
         
         return value
     

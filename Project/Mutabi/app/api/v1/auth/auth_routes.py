@@ -290,6 +290,7 @@ def create_parent():
     """
     try:
         data = request.get_json()
+        data["clinic_id"] = g.jwt_claims["clinic_id"]
         result = AuthFacade.create_parent(data)
         return jsonify(result), 201
     except ValueError as e:

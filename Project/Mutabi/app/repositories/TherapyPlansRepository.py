@@ -28,6 +28,7 @@ class TherapyPlansRepository:
         return (
             db.session.query(TherapyPlans)
             .filter_by(child_id=child_id, status=EnumStatus.Active)
+            .order_by(TherapyPlans.created_at.desc())
             .first()
         )
 

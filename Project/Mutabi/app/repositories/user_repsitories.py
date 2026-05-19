@@ -47,7 +47,6 @@ class UserRepositories:
             .all()
         )
 
-    import bcrypt
 
     @staticmethod
     def create(data: dict) -> Users:
@@ -118,5 +117,13 @@ class UserRepositories:
         return (
             db.session.query(Users)
             .filter_by(email=email.strip().lower())
+            .first() is not None
+        )
+    
+    @staticmethod
+    def phone_exists(phone: str) -> bool:
+        return (
+            db.session.query(Users)
+            .filter_by(phone=phone.strip())
             .first() is not None
         )
