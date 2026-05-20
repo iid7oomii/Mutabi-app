@@ -358,7 +358,7 @@ def parent_signup():
         data = request.get_json()
         result = AuthFacade.parent_signup(data)
 
-        response = make_response(jsonify({"role": result["role"]}), 201)
+        response = make_response(jsonify({"role": result["role"], "token": result["token"]}), 201)
         response.set_cookie(
             'token',
             result["token"],
@@ -370,6 +370,8 @@ def parent_signup():
         return response
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "An unexpected error occurred. Please try again."}), 500
 
 
 @auth_bp.route("/reset-password", methods=["PUT"])
