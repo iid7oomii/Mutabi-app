@@ -1,4 +1,3 @@
-# repositories/children_repository.py
 from app.models.Children import Children
 from app.models.Therapy_plans import TherapyPlans
 from app import db

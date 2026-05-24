@@ -196,3 +196,16 @@ def delete_child(child_id):
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
+    
+
+
+@children_bp.route("/register-family", methods=["POST"])
+@role_required("Admin", "Doctor")
+def register_family():
+    try:
+        data = request.get_json()
+        claims = g.jwt_claims
+        result = ChildrenService.register_family(data, claims)
+        return jsonify(result), 201
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400

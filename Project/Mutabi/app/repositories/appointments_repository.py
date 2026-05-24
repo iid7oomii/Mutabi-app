@@ -1,4 +1,3 @@
-# app/repositories/appointments_repository.py
 from app.models.Appointments import Appointments
 from app import db
 from typing import List, Optional

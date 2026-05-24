@@ -5,6 +5,7 @@ from app.repositories.therapyplansrepository import TherapyPlansRepository
 from app.repositories.appointments_repository import AppointmentsRepository
 from app.repositories.plan_exercises_repository import PlanExercisesRepository
 from app.repositories.feedback_repository import FeedbackRepository
+from app.models.EnumUsers import RoleUser
 
 
 class ChildrenService:
@@ -103,7 +104,7 @@ class ChildrenService:
                 "total_exercises": total,
                 "completed_exercises": completed,
                 "completion_pct": completion_pct,
-                "all_exercises": [        # ← أضف هذا
+                "all_exercises": [
                     {
                         "id": str(pe.id),
                         "title": pe.exercise.title,
@@ -144,3 +145,44 @@ class ChildrenService:
         if not deleted:
             raise ValueError("Child not found")
         return {"message": "Child deleted successfully"}
+    
+
+    @staticmethod
+    def register_family(data: dict, claims: dict) -> dict:
+        from app import db
+        from app.services.auth_service import AuthService
+        
+        try:
+            
+            parent_user = UserRepositories.create({
+                "clinic_id": claims["clinic_id"],
+                "first_name": data["parent_first_name"],
+                "second_name": data["parent_second_name"],
+                "email": data["parent_email"],
+                "phone": data.get("parent_phone"),
+                "password": data["parent_password"],
+                "role": RoleUser.Parent,
+                "relationship_type": data["parent_relationship"],
+                "is_active": True
+            })
+
+            child = ChildrenRepository.create({
+                "clinic_id": claims["clinic_id"],
+                "parent_id": str(parent_user.id),
+                "doctor_id": data["doctor_id"],
+                "first_name": data["child_first_name"],
+                "second_name": data["child_second_name"],
+                "date_of_birth": data["date_of_birth"],
+                "diagnosis_notes": data.get("diagnosis_notes"),
+            })
+
+            db.session.commit()
+
+            return {
+                "parent": parent_user.to_dict(exclude=["password"]),
+                "child": child.to_dict(),
+            }
+
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(str(e))

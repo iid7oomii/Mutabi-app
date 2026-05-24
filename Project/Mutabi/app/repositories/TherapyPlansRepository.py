@@ -1,4 +1,3 @@
-# repositories/therapy_plans_repository.py
 from app.models.Therapy_plans import TherapyPlans
 from app.models.EnumStatus import EnumStatus
 from app import db

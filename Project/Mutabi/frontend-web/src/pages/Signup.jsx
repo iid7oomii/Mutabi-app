@@ -18,12 +18,10 @@ export default function Signup() {
   }, [user])
 
   const [form, setForm] = useState({
-    // Clinic
     clinic_name: '',
     logo_url: '',
     contact_phone: '',
     address: '',
-    // Admin
     first_name: '',
     second_name: '',
     email: '',
@@ -38,62 +36,118 @@ export default function Signup() {
 
   const handleNext = (e) => {
     e.preventDefault()
-    setError('')
+    setError(null)
 
-    if (!form.clinic_name || !form.contact_phone) {
-      setError('يرجى تعبئة جميع الحقول المطلوبة')
-      return
+		const nameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
+
+    if (!form.clinic_name || !nameRegex.test(form.clinic_name)){
+			setError({field:'clinic_name', message:'اسم العيادة يجب ان يكون نص'})
+			return
     }
+
+		if (form.clinic_name.length > 50){
+			setError({field:'clinic_name' , message:'اسم العياده يجب ان يكون اقل من 50 حرف'})
+			return
+		}
+
+		const phoneRegex = /^05\d{8}$/;
+
+		if (!form.contact_phone || !phoneRegex.test(form.contact_phone) || form.contact_phone.length != 10) {
+			setError({field:'contact_phone' , message:'رقم الجوال يجب أن يكون رقم سعودي صحيح يبدأ بـ 05 ويتكون من 10 أرقام'});
+			return
+		}
+
     setStep(2)
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
+  e.preventDefault();
+  setError(null);
 
-    if (form.password !== form.confirm_password) {
-      setError('كلمة المرور غير متطابقة')
-      return
-    }
+  const nameRegex = /^[\u0600-\u06FFa-zA-Z\s]+$/;
 
-    setLoading(true)
-
-    try {
-      const res = await fetch('/api/v1/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          clinic_name: form.clinic_name,
-          logo_url: form.logo_url || 'https://example.com/logo.png',
-          contact_phone: form.contact_phone,
-          address: form.address,
-          first_name: form.first_name,
-          second_name: form.second_name,
-          email: form.email,
-          phone: form.phone,
-          password: form.password,
-        }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.error || 'حدث خطأ')
-        return
-      }
-
-      await fetchUser()
-
-    } catch {
-      setError('تعذر الاتصال بالخادم')
-    } finally {
-      setLoading(false)
-    }
+  if (!form.first_name || !nameRegex.test(form.first_name)) {
+    setError({ field: 'first_name', message: 'الاسم الأول مطلوب ويجب أن يحتوي على أحرف فقط' });
+    return;
+  }
+  if (form.first_name.length < 2 || form.first_name.length > 50) {
+    setError({ field: 'first_name', message: 'الاسم الأول يجب أن يكون بين 2 و 50 حرف' });
+    return;
   }
 
+  if (!form.second_name || !nameRegex.test(form.second_name)) {
+    setError({ field: 'second_name', message: 'الاسم الثاني مطلوب ويجب أن يحتوي على أحرف فقط' });
+    return;
+  }
+  if (form.second_name.length < 2 || form.second_name.length > 50) {
+    setError({ field: 'second_name', message: 'الاسم الثاني يجب أن يكون بين 2 و 50 حرف' });
+    return;
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!form.email || !emailRegex.test(form.email)) {
+    setError({ field: 'email', message: 'يرجى إدخال بريد إلكتروني صحيح' });
+    return;
+  }
+
+  const phoneRegex = /^05\d{8}$/;
+  if (!form.phone || !phoneRegex.test(form.phone)) {
+    setError({ field: 'phone', message: 'رقم الجوال يجب أن يبدأ بـ 05 ويتكون من 10 أرقام' });
+    return;
+  }
+
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+  if (!form.password || !passwordRegex.test(form.password)) {
+    setError({ 
+      field: 'password', 
+      message: 'كلمة المرور يجب أن تكون 8 خانات على الأقل وتحتوي على: حرف كبير، حرف صغير، رقم، ورمز خاص' 
+    });
+    return;
+  }
+
+  if (form.password !== form.confirm_password) {
+    setError({ field: 'confirm_password', message: 'كلمة المرور غير متطابقة' });
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const res = await fetch('/api/v1/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        clinic_name: form.clinic_name,
+        logo_url: form.logo_url || 'https://example.com/logo.png',
+        contact_phone: form.contact_phone,
+        address: form.address,
+        first_name: form.first_name,
+        second_name: form.second_name,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setError({ message: data.error || 'حدث خطأ أثناء إنشاء الحساب' });
+      return;
+    }
+
+    await fetchUser();
+
+  } catch {
+    setError({ message: 'تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً' });
+  } finally {
+    setLoading(false);
+  }
+};
+
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
+    <div className="min-h-screen flex items-center justify-center" dir="rtl">
       <div className="w-full max-w-md">
 
         {/* Logo */}
@@ -123,7 +177,7 @@ export default function Signup() {
 
           {error && (
             <div className="bg-red-50 text-red-600 text-sm rounded-xl p-3 mb-4 text-center">
-              {error}
+              {error.message}
             </div>
           )}
 
@@ -132,16 +186,42 @@ export default function Signup() {
             <form onSubmit={handleNext} className="space-y-4">
               <h2 className="text-xl font-bold text-gray-800 mb-4">بيانات العيادة</h2>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">اسم العيادة *</label>
-                <input name="clinic_name" value={form.clinic_name} onChange={handleChange}
-                  placeholder="عيادة الأمل" required
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-gray-700 text-sm transition" />
-              </div>
+                    <div>
+                    <label 
+                        className={`block text-sm font-medium mb-1 transition ${
+                        error?.field === 'clinic_name' ? 'text-red-500' : 'text-gray-600'
+                        }`}
+                    >
+                        اسم العيادة *
+                    </label>
+                    
+                    <input 
+                        name="clinic_name" 
+                        value={form.clinic_name} 
+                        onChange={(e) => {
+                        handleChange(e);
+                        if (error?.field === 'clinic_name') setError(null);
+                        }}
+                        placeholder="عيادة الأمل" 
+                        required
+                        className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 text-sm transition ${
+                        error?.field === 'clinic_name' 
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-100 text-red-700 bg-red-50' 
+                            : 'border-gray-200 focus:border-orange-400 focus:ring-orange-100 text-gray-700'
+                        }`} 
+                    />
+                    
+                    {error?.field === 'clinic_name' && (
+                        <p className="mt-2 text-sm text-red-500">{error.message}</p>
+                    )}
+                    </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">رقم التواصل *</label>
-                <input name="contact_phone" value={form.contact_phone} onChange={handleChange}
+                <input name="contact_phone" maxLength="10" value={form.contact_phone} onChange={(e) => {
+										e.target.value = e.target.value.replace(/[^0-9]/g, '');
+										handleChange(e);
+									}}
                   placeholder="0512345678" required
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-gray-700 text-sm transition" />
               </div>
@@ -190,8 +270,10 @@ export default function Signup() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">رقم الجوال</label>
-                <input name="phone" value={form.phone} onChange={handleChange}
-                  placeholder="0512345678" required
+                <input name="phone" maxLength="10" value={form.phone} onChange={(e) => {
+										e.target.value = e.target.value.replace(/[^0-9]/g, '');
+										handleChange(e);
+									}}
                   className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-gray-700 text-sm transition" />
               </div>
 

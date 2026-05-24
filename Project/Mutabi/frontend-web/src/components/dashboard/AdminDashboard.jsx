@@ -105,9 +105,9 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="space-y-6" dir="ltr">
+    <div className="space-y-6"  dir="ltr">
 
-      <div className="flex items-start justify-between">
+      <div className="flex items-start  justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
           <p className="text-sm text-gray-400 mt-1">

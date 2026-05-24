@@ -49,13 +49,13 @@ export default function Login() {
 }
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center" dir="rtl">
+    <div className="min-h-screen bg-stone-200 flex items-center justify-center" dir="rtl">
       <div className="w-full max-w-md">
 
         {/* Logo */}
         <div className="text-center mb-10">
           <img src={logo} alt="Logo"  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"/>
-          <h1 className="text-3xl font-bold text-gray-800">مُتابِع</h1>
+          <h1 className="text-3xl font-bold text-gray-800">متابع</h1>
           <p className="text-gray-400 mt-1 text-sm">منصة متابعة العلاج</p>
         </div>
 

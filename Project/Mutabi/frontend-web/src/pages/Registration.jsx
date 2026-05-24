@@ -69,69 +69,56 @@ export default function Registration() {
   }
 
   const handleSubmit = async () => {
-    setError(null)
-    if (!form.parent_first_name || !form.parent_second_name)
-      return setError('Please enter parent full name.')
-    if (!form.parent_email)
-      return setError('Please enter parent email.')
-    if (!form.parent_relationship)
-      return setError('Please select relationship to child.')
-    if (form.parent_relationship === 'other' && !customRelationship.trim())
-      return setError('Please specify the relationship.')
-    if (!form.child_first_name || !form.child_second_name)
-      return setError('Please enter child full name.')
-    if (!form.child_dob)
-      return setError('Please enter child date of birth.')
-    if (isAdmin && !form.doctor_id)
-      return setError('Please assign a doctor.')
+  setError(null)
+  if (!form.parent_first_name || !form.parent_second_name)
+    return setError('Please enter parent full name.')
+  if (!form.parent_email)
+    return setError('Please enter parent email.')
+  if (!form.parent_relationship)
+    return setError('Please select relationship to child.')
+  if (form.parent_relationship === 'other' && !customRelationship.trim())
+    return setError('Please specify the relationship.')
+  if (!form.child_first_name || !form.child_second_name)
+    return setError('Please enter child full name.')
+  if (!form.child_dob)
+    return setError('Please enter child date of birth.')
+  if (isAdmin && !form.doctor_id)
+    return setError('Please assign a doctor.')
 
-    setSaving(true)
-    try {
-      const parentRes = await fetch('/api/v1/auth/parent', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: form.parent_first_name,
-          second_name: form.parent_second_name,
-          email: form.parent_email,
-          phone: form.parent_phone,
-          relationship_type: form.parent_relationship,
-          password: generatePassword(),
-        }),
-      })
-      if (!parentRes.ok) {
-        const e = await parentRes.json()
-        throw new Error(e.error || 'Failed to create parent')
-      }
-      const parent = await parentRes.json()
+  setSaving(true)
+  try {
+    const res = await fetch('/api/v1/children/register-family', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        parent_first_name: form.parent_first_name,
+        parent_second_name: form.parent_second_name,
+        parent_email: form.parent_email,
+        parent_phone: form.parent_phone,
+        parent_relationship: form.parent_relationship === 'other' ? customRelationship : form.parent_relationship,
+        parent_password: generatePassword(),
+        child_first_name: form.child_first_name,
+        child_second_name: form.child_second_name,
+        date_of_birth: form.child_dob,
+        diagnosis_notes: form.child_diagnosis,
+        doctor_id: form.doctor_id || user?.user_id,
+      }),
+    })
 
-      const childRes = await fetch('/api/v1/children/', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: form.child_first_name,
-          second_name: form.child_second_name,
-          date_of_birth: form.child_dob,
-          diagnosis_notes: form.child_diagnosis,
-          parent_id: parent.id,
-          doctor_id: form.doctor_id || user?.id,
-        }),
-      })
-      if (!childRes.ok) {
-        const e = await childRes.json()
-        throw new Error(e.error || 'Failed to create child')
-      }
-
-      setSuccess('Family registered successfully!')
-      setTimeout(() => navigate('/patients'), 1600)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setSaving(false)
+    if (!res.ok) {
+      const e = await res.json()
+      throw new Error(e.error || 'Registration failed')
     }
+
+    setSuccess('Family registered successfully!')
+    setTimeout(() => navigate('/patients'), 1600)
+  } catch (err) {
+    setError(err.message)
+  } finally {
+    setSaving(false)
   }
+}
 
   const inputClass = "w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
   const selectClass = "w-full appearance-none border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
