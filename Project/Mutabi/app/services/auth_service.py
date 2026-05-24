@@ -1,6 +1,8 @@
 from app.repositories.user_repsitories import UserRepositories
 from app.utils.helpers import generate_token, generate_temp_password
 from app.models.EnumUsers import RoleUser
+from app.models.Clinics import Clinic
+from app import db
 import re
 
 def validate_password_strength(password: str):
@@ -83,6 +85,10 @@ class AuthService:
 
     @staticmethod
     def create_parent(data: dict) -> dict:
+        clinic = db.session.get(Clinic, data.get("clinic_id"))
+        if not clinic:
+            raise ValueError("Clinic ID not found. Please ask your clinic admin for the correct ID.")
+
         if UserRepositories.email_exists(data["email"]):
             raise ValueError("Email already exists")
 
@@ -90,7 +96,7 @@ class AuthService:
 
         if data.get("phone") and UserRepositories.phone_exists(data["phone"]):
             raise ValueError("Phone number already exists")
-        
+
         user = UserRepositories.create({
             "clinic_id": data["clinic_id"],
             "first_name": data["first_name"],
@@ -103,12 +109,15 @@ class AuthService:
             "is_active": True
         })
 
+        token = generate_token(str(user.id), user.role.value, str(user.clinic_id))
+
         return {
             "id": str(user.id),
             "first_name": user.first_name,
             "second_name": user.second_name,
             "email": user.email,
             "role": user.role.value,
+            "token": token,
         }
 
 

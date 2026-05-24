@@ -233,27 +233,27 @@ def delete_feedback(feedback_id):
 @feedback_bp.route("/child/<child_id>", methods=["GET"])
 @role_required("Admin", "Doctor")
 def get_by_child(child_id):
-		"""
-		Get Feedback By Child
-		---
-		tags:
-		- Feedback
-		security:
-		- Bearer: []
-		parameters:
-		- in: path
-				name: child_id
-				required: true
-				type: string
-		responses:
-		200:
-				description: قائمة الـ feedback
-		"""
-		try:
-				result = FeedbackService.get_by_child(child_id)
-				return jsonify(result), 200
-		except ValueError as e:
-				return jsonify({"error": str(e)}), 404
+    """
+    Get Feedback By Child
+    ---
+    tags:
+      - Feedback
+    security:
+      - Bearer: []
+    parameters:
+      - in: path
+        name: child_id
+        required: true
+        type: string
+    responses:
+      200:
+        description: قائمة الـ feedback
+    """
+    try:
+        result = FeedbackService.get_by_child(child_id)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 404
             
 
 @feedback_bp.route("/doctor/all", methods=["GET"])
