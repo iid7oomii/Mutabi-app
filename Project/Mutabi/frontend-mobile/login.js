@@ -123,16 +123,6 @@ export default function Login({ navigation }) {
           }
         </TouchableOpacity>
 
-        {/* Create Account */}
-        <View style={styles.signupRow}>
-          <Text style={styles.signupText}>Don't have an account?</Text>
-          <TouchableOpacity
-            style={styles.createAccountBtn}
-            onPress={() => navigation.navigate('CreateAccount')}
-          >
-            <Text style={styles.createAccountText}>Create Account</Text>
-          </TouchableOpacity>
-        </View>
 
       </KeyboardAvoidingView>
     </SafeAreaView>

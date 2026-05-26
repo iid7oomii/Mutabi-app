@@ -43,3 +43,7 @@ class AuthFacade:
     @staticmethod
     def reset_password(user_id: str, old_password: str, new_password: str) -> dict:
         return AuthService.reset_password(user_id, old_password, new_password)
+    
+    @staticmethod
+    def set_password(user_id: str, tempPassword: str, newPassword: str) -> dict:
+        return AuthService.set_password(user_id, tempPassword, newPassword)

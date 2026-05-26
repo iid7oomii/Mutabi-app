@@ -14,9 +14,15 @@ export default function Login() {
 
   const { fetchUser, user } = useAuthStore()
 
-  useEffect(() => {
-    if (user) navigate('/dashboard')
-  }, [user])
+    useEffect(() => {
+    if (user) {
+        if (!user.active) {
+        navigate('/set_password', { replace: true });
+        } else {
+        navigate('/dashboard', { replace: true });
+        }
+    }
+    }, [user, navigate]);
 
   const handleLogin = async (e) => {
   e.preventDefault()
@@ -38,6 +44,8 @@ export default function Login() {
       return
     }
 
+
+
     await fetchUser()
 
 
@@ -49,7 +57,7 @@ export default function Login() {
 }
 
   return (
-    <div className="min-h-screen bg-stone-200 flex items-center justify-center" dir="rtl">
+    <div className="min-h-screen flex items-center justify-center" dir="rtl">
       <div className="w-full max-w-md">
 
         {/* Logo */}

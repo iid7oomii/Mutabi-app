@@ -1,8 +1,6 @@
 from app.repositories.user_repsitories import UserRepositories
 from app.utils.helpers import generate_token, generate_temp_password
 from app.models.EnumUsers import RoleUser
-from app.models.Clinics import Clinic
-from app import db
 import re
 
 def validate_password_strength(password: str):
@@ -27,15 +25,13 @@ class AuthService:
         if not user:
             raise ValueError("Invalid email or password")
 
-        if not user.is_active:
-            raise ValueError("Account is not active")
 
         if not UserRepositories.verify_password(user, password):
             raise ValueError("Invalid email or password")
 
         token = generate_token(str(user.id), user.role.value, str(user.clinic_id))
 
-        return {"token": token, "role": user.role.value}
+        return {"token": token, "role": user.role.value, "active": user.is_active}
 
     @staticmethod
     def signup(data: dict) -> dict:
@@ -78,17 +74,13 @@ class AuthService:
             "password": temp_password,
             "role": RoleUser.Doctor,
             "specialty": data["specialty"],
-            "is_active": True
+            "is_active": False
         })
 
         return {"temp_password": temp_password, "user_id": str(user.id)}
 
     @staticmethod
     def create_parent(data: dict) -> dict:
-        clinic = db.session.get(Clinic, data.get("clinic_id"))
-        if not clinic:
-            raise ValueError("Clinic ID not found. Please ask your clinic admin for the correct ID.")
-
         if UserRepositories.email_exists(data["email"]):
             raise ValueError("Email already exists")
 
@@ -139,4 +131,25 @@ class AuthService:
         UserRepositories.update(user_id, {"password": new_password})
 
         return {"message": "Password updated successfully"}
+    
+    @staticmethod
+    def set_password(user_id: str, tempPassword: str, new_password: str):
+        user = UserRepositories.get_by_id(user_id)
+
+        if not user:
+            raise ValueError("User not found")
+        
+        if user.is_active:
+            raise ValueError("User is activated")
+        
+        if not UserRepositories.verify_password(user, tempPassword):
+            raise ValueError("TempPassword is incorrect")
+        
+        validate_password_strength(new_password)
+
+        UserRepositories.update(user_id, {"password": new_password, "is_active": True})
+
+        return {"message": "User is activated"}
+        
+
     

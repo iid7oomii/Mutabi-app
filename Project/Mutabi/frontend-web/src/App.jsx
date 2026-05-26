@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import useAuthStore from './store/authStore'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -14,24 +14,38 @@ import Doctors from './pages/Doctors'
 import DoctorProgress from './pages/DoctorProgress'
 import DoctorProfile from './pages/DoctorProfile'
 import ExerciseLibrary from './pages/ExerciseLibrary'
+import SetPassword from './pages/SetPassword'
 import './App.css'
 
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuthStore()
+  const location = useLocation()
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-orange-500 text-lg">جاري التحميل...</div>
     </div>
   )
+	console.log("قيمة Active القادمة من الباك إند هي:", user.active, "ونوعها:", typeof user.active);
+  if (!user.active && location.pathname !== '/set_password')
+    return <Navigate to="/set_password" replace />
+
   if (!user) return <Navigate to="/" replace />
   return children
+
 }
 
 function AdminRoute({ children }) {
   const { user, loading } = useAuthStore()
+  const location = useLocation()
+  
   if (loading) return null
   if (!user) return <Navigate to="/" />
+
+	if (!user.active && location.pathname !== '/set_password')
+	return <Navigate to="/set_password" replace />
+
   if (user.role !== 'admin') return <Navigate to="/dashboard" />
   return children
 }
@@ -112,6 +126,12 @@ function App() {
                 <AdminRoute>
                     <DoctorProgress />
                 </AdminRoute>
+                } />
+
+                <Route path='/set_Password' element={
+                    <ProtectedRoute>
+                        <SetPassword />
+                    </ProtectedRoute>
                 } />
     </Routes>
     

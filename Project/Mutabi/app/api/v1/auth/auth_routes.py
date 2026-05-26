@@ -1,6 +1,5 @@
-# app/api/v1/auth/auth_routes.py
 from flask import Blueprint, request, jsonify, make_response, g
-from flask_jwt_extended import get_jwt_identity, decode_token
+from flask_jwt_extended import get_jwt_identity, decode_token, jwt_required
 from app.facade.auth_facade import AuthFacade
 from app.api.v1.middleware.role_required import role_required
 from app.repositories.user_repsitories import UserRepositories
@@ -150,7 +149,8 @@ def login():
         result = AuthFacade.login(data["email"], data["password"])
         response = make_response(jsonify({
             "role": result["role"],
-            "token": result["token"]
+            "token": result["token"],
+            "active": result["active"]
         }), 200)
         response.set_cookie(
             'token',
@@ -418,6 +418,28 @@ def reset_password():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     
+
+@auth_bp.route("/set_password", methods=["PUT"])
+@role_required("Doctor", "Parent")
+def set_password():
+    try:
+        token = request.cookies.get('token')
+        if not token:
+            return jsonify({"error": "Unauthorized"}), 401
+            
+        claims = decode_token(token)
+        user_id = claims["sub"]
+        data = request.get_json()
+        result = AuthFacade.set_password(user_id, data["tempPassword"], data["newPassword"])
+
+        return jsonify(result), 200
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": "Unauthorized"}), 401
+    
+
 @auth_bp.route("/me", methods=["GET"])
 def me():
     try:
@@ -436,6 +458,7 @@ def me():
             "clinic_id": claims["clinic_id"],
             "first_name": user.first_name,
             "second_name": user.second_name,
+            "active": user.is_active,
         }), 200
     except Exception:
         return jsonify({"error": "Unauthorized"}), 401
