@@ -1,3 +1,5 @@
+import { ChevronDownIcon } from '../Icons'
+
 export default function Select({ value, onChange, children, className = '' }) {
   return (
     <div className="relative">
@@ -9,7 +11,9 @@ export default function Select({ value, onChange, children, className = '' }) {
       >
         {children}
       </select>
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <ChevronDownIcon className="w-3 h-3" />
+      </span>
     </div>
   )
 }

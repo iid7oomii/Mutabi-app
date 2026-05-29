@@ -1,3 +1,5 @@
+import { ChevronDownIcon } from '../Icons'
+
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 const EX_COLORS = ['#FF8C42', '#4ECDC4', '#0F4C81', '#9B59B6', '#E67E22', '#1ABC9C', '#3498DB', '#E74C3C']
 const exColor = (str) => EX_COLORS[(str || 'A').charCodeAt(0) % EX_COLORS.length]
@@ -69,7 +71,9 @@ export default function ExerciseList({ selected, removeExercise, updateDay, upda
                       <option key={d} value={d}>{d.charAt(0).toUpperCase() + d.slice(1)}</option>
                     ))}
                   </select>
-                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-gray-400">
+                    <ChevronDownIcon className="w-3 h-3" />
+                  </span>
                 </div>
 
                 {/* Reps */}

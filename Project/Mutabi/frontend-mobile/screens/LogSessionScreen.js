@@ -12,13 +12,12 @@ const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
 
 const COMPLETION_OPTIONS = [
-  { key: 'completed',           label: 'Completed',  icon: 'checkmark-circle', color: '#2E7D32', bg: '#E8F5E9' },
-  { key: 'partially_completed', label: 'Partial',    icon: 'radio-button-on',  color: '#E65100', bg: '#FFF3E8' },
-  { key: 'skipped',             label: 'Skipped',    icon: 'close-circle',     color: '#B71C1C', bg: '#FFEBEE' },
+  { key: 'completed',           label: 'مكتمل',      icon: 'checkmark-circle', color: '#2E7D32', bg: '#E8F5E9' },
+  { key: 'partially_completed', label: 'جزئي',       icon: 'radio-button-on',  color: '#E65100', bg: '#FFF3E8' },
+  { key: 'skipped',             label: 'تم التخطي',  icon: 'close-circle',     color: '#B71C1C', bg: '#FFEBEE' },
 ]
 
 const MOODS = ['😣', '😟', '😐', '😊', '😄']
-// mood index 0 = very bad → pain 9, mood 4 = great → pain 1
 const moodToPain = [9, 7, 5, 3, 1]
 
 export default function LogSessionScreen() {
@@ -33,7 +32,7 @@ export default function LogSessionScreen() {
 
   const handleSave = async () => {
     if (!planExerciseId) {
-      Alert.alert('Error', 'Exercise ID is missing.')
+      Alert.alert('خطأ', 'معرّف التمرين مفقود.')
       return
     }
     setSaving(true)
@@ -52,25 +51,24 @@ export default function LogSessionScreen() {
       const json = await res.json()
 
       if (!res.ok) {
-        Alert.alert('Error', json.error || 'Could not save session')
+        Alert.alert('خطأ', json.error || 'تعذر حفظ الجلسة')
         return
       }
 
-      // Save locally for Progress screen
       await saveSessionLocally({
         plan_exercise_id: planExerciseId,
-        exercise_title:   exerciseTitle || 'Exercise',
+        exercise_title:   exerciseTitle || 'التمرين',
         date:             today,
         completion_status: completionStatus,
         pain_level:        moodToPain[moodIndex],
         notes:             notes.trim(),
       })
 
-      Alert.alert('Session Saved!', 'Great job logging today\'s session.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+      Alert.alert('تم حفظ الجلسة!', 'أحسنت! تم تسجيل جلسة اليوم.', [
+        { text: 'حسناً', onPress: () => navigation.goBack() },
       ])
     } catch {
-      Alert.alert('Error', 'Could not connect to server')
+      Alert.alert('خطأ', 'تعذر الاتصال بالخادم')
     } finally {
       setSaving(false)
     }
@@ -85,7 +83,7 @@ export default function LogSessionScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeBtn}>
           <Ionicons name="close" size={24} color="#1a1a2e" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Log Session</Text>
+        <Text style={styles.headerTitle}>تسجيل الجلسة</Text>
         <View style={{ width: 36 }} />
       </View>
 
@@ -98,17 +96,17 @@ export default function LogSessionScreen() {
           {/* Exercise Info */}
           <View style={styles.exerciseInfoCard}>
             <View style={styles.exerciseTag}>
-              <Text style={styles.exerciseTagText}>SPEECH THERAPY</Text>
+              <Text style={styles.exerciseTagText}>علاج النطق</Text>
             </View>
-            <Text style={styles.exerciseTitle}>{exerciseTitle || 'Exercise'}</Text>
+            <Text style={styles.exerciseTitle}>{exerciseTitle || 'التمرين'}</Text>
             <View style={styles.exerciseTime}>
               <Ionicons name="calendar-outline" size={13} color="#888" />
-              <Text style={styles.exerciseTimeText}>Today, {timeStr}</Text>
+              <Text style={styles.exerciseTimeText}>اليوم، {timeStr}</Text>
             </View>
           </View>
 
           {/* Completion Status */}
-          <Text style={styles.sectionLabel}>Completion Status</Text>
+          <Text style={styles.sectionLabel}>حالة الإنجاز</Text>
           <View style={styles.completionOptions}>
             {COMPLETION_OPTIONS.map(opt => {
               const isActive = completionStatus === opt.key
@@ -141,7 +139,7 @@ export default function LogSessionScreen() {
           </View>
 
           {/* Child's Mood */}
-          <Text style={styles.sectionLabel}>Child's Mood</Text>
+          <Text style={styles.sectionLabel}>مزاج الطفل</Text>
           <View style={styles.moodRow}>
             {MOODS.map((emoji, i) => (
               <TouchableOpacity
@@ -153,7 +151,7 @@ export default function LogSessionScreen() {
                 <Text style={styles.moodEmoji}>{emoji}</Text>
                 {i === moodIndex && (
                   <Text style={styles.moodActiveLabel}>
-                    {['Bad', 'Low', 'Okay', 'Good', 'Great'][i]}
+                    {['سيء', 'منخفض', 'عادي', 'جيد', 'ممتاز'][i]}
                   </Text>
                 )}
               </TouchableOpacity>
@@ -161,10 +159,10 @@ export default function LogSessionScreen() {
           </View>
 
           {/* Parent Notes */}
-          <Text style={styles.sectionLabel}>Parent Notes <Text style={styles.optional}>(Optional)</Text></Text>
+          <Text style={styles.sectionLabel}>ملاحظات الوالد <Text style={styles.optional}>(اختياري)</Text></Text>
           <TextInput
             style={styles.notesInput}
-            placeholder="How did it go? Note any challenges, breakthroughs, or specific observations..."
+            placeholder="كيف سارت الجلسة؟ دوّن أي تحديات أو إنجازات أو ملاحظات..."
             placeholderTextColor="#bbb"
             multiline
             numberOfLines={4}
@@ -174,17 +172,17 @@ export default function LogSessionScreen() {
           />
 
           {/* Photos / Videos */}
-          <Text style={styles.sectionLabel}>Photos or Videos <Text style={styles.optional}>(Optional)</Text></Text>
+          <Text style={styles.sectionLabel}>صور أو مقاطع مرئية <Text style={styles.optional}>(اختياري)</Text></Text>
           <TouchableOpacity
             style={styles.uploadBox}
-            onPress={() => Alert.alert('Coming Soon', 'Media upload will be available in the next update.')}
+            onPress={() => Alert.alert('قادم قريباً', 'رفع الوسائط سيكون متاحاً في التحديث القادم.')}
           >
             <Ionicons name="camera-outline" size={32} color="#aaa" />
-            <Text style={styles.uploadTitle}>Add progress media</Text>
-            <Text style={styles.uploadSub}>Capture breakthroughs or techniques</Text>
+            <Text style={styles.uploadTitle}>إضافة وسائط للتقدم</Text>
+            <Text style={styles.uploadSub}>التقط الإنجازات أو التقنيات</Text>
             <View style={styles.uploadBtn}>
               <Ionicons name="cloud-upload-outline" size={16} color={BLUE} />
-              <Text style={styles.uploadBtnText}>Upload Media</Text>
+              <Text style={styles.uploadBtnText}>رفع الوسائط</Text>
             </View>
           </TouchableOpacity>
 
@@ -201,7 +199,7 @@ export default function LogSessionScreen() {
             {saving
               ? <ActivityIndicator color="#fff" />
               : <>
-                  <Text style={styles.saveBtnText}>Save Session</Text>
+                  <Text style={styles.saveBtnText}>حفظ الجلسة</Text>
                   <Ionicons name="save-outline" size={18} color="#fff" />
                 </>
             }
@@ -221,7 +219,6 @@ const styles = StyleSheet.create({
 
   scroll: { padding: 20, paddingBottom: 16 },
 
-  /* Exercise info */
   exerciseInfoCard: { backgroundColor: '#f8f9fb', borderRadius: 14, padding: 16, marginBottom: 24 },
   exerciseTag:      { backgroundColor: '#EEF3FA', alignSelf: 'flex-start', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, marginBottom: 8 },
   exerciseTagText:  { fontSize: 10, color: BLUE, fontWeight: '700', letterSpacing: 0.5 },
@@ -232,30 +229,25 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 14, fontWeight: '700', color: '#1a1a2e', marginBottom: 12 },
   optional:     { fontWeight: '400', color: '#aaa' },
 
-  /* Completion */
   completionOptions: { flexDirection: 'row', gap: 10, marginBottom: 24 },
   completionOption:  { flex: 1, alignItems: 'center', padding: 14, borderRadius: 12, borderWidth: 1.5, borderColor: '#e8e8e8', gap: 6, position: 'relative' },
   completionLabel:   { fontSize: 13, fontWeight: '600', color: '#aaa' },
   checkMark:         { position: 'absolute', top: 6, right: 6, width: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
 
-  /* Mood */
   moodRow:        { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
   moodBtn:        { alignItems: 'center', width: 52, height: 52, borderRadius: 26, justifyContent: 'center' },
   moodBtnActive:  { backgroundColor: '#EEF3FA', height: 68, borderRadius: 34 },
   moodEmoji:      { fontSize: 26 },
   moodActiveLabel:{ fontSize: 10, color: BLUE, fontWeight: '600', marginTop: 2 },
 
-  /* Notes */
   notesInput: { borderWidth: 1, borderColor: '#e8e8e8', borderRadius: 12, padding: 14, fontSize: 14, color: '#333', minHeight: 100, marginBottom: 24, backgroundColor: '#fafafa' },
 
-  /* Upload */
   uploadBox:      { borderWidth: 1, borderColor: '#e8e8e8', borderStyle: 'dashed', borderRadius: 12, padding: 24, alignItems: 'center', gap: 6, marginBottom: 8, backgroundColor: '#fafafa' },
   uploadTitle:    { fontSize: 14, fontWeight: '600', color: '#444' },
   uploadSub:      { fontSize: 12, color: '#aaa' },
   uploadBtn:      { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8, borderWidth: 1, borderColor: BLUE, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8 },
   uploadBtnText:  { fontSize: 13, color: BLUE, fontWeight: '600' },
 
-  /* Footer */
   footer:       { padding: 16, borderTopWidth: 1, borderTopColor: '#f0f0f0', backgroundColor: '#fff' },
   saveBtn:      { backgroundColor: ORANGE, borderRadius: 12, height: 52, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
   saveBtnText:  { color: '#fff', fontSize: 16, fontWeight: '700' },

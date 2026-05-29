@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { WarningIcon, CheckIcon } from '../components/Icons'
 import PlanForm from '../components/therapy/PlanForm'
 import ExerciseList from '../components/therapy/ExerciseList'
 import ExerciseLibrary from '../components/therapy/ExerciseLibrary'
@@ -110,12 +111,12 @@ export default function TherapyPlanBuilder() {
 
           {error && (
             <div className="mb-5 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-center gap-2">
-              <span>⚠</span> {error}
+              <WarningIcon className="w-4 h-4 flex-shrink-0" /> {error}
             </div>
           )}
           {success && (
             <div className="mb-5 px-4 py-3 bg-green-50 border border-green-100 rounded-xl text-sm text-green-600 flex items-center gap-2">
-              <span>✓</span> {success}
+              <CheckIcon className="w-4 h-4 flex-shrink-0" /> {success}
             </div>
           )}
 

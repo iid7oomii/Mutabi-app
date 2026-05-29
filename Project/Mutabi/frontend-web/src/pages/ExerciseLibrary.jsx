@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { WarningIcon, CloseIcon } from '../components/Icons'
 
 const EX_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -36,9 +37,17 @@ export default function ExerciseLibrary() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this exercise?')) return
-    await fetch(`/api/v1/exercises/${id}`, { method: 'DELETE', credentials: 'include' })
+    const res = await fetch(`/api/v1/exercises/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+    })
+    if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || 'Failed to delete exercise')
+        return
+    }
     load()
-  }
+    }
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0]
@@ -110,6 +119,19 @@ export default function ExerciseLibrary() {
               Add Exercise
             </button>
           </div>
+          {error && (
+            <div className="mb-6 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                <WarningIcon />
+                <span>{error}</span>
+                </div>
+                <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600 flex-shrink-0">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                </button>
+            </div>
+            )}
 
           {/* Search */}
           <div className="relative mb-6">
@@ -217,13 +239,13 @@ export default function ExerciseLibrary() {
               <h2 className="text-base font-semibold text-gray-800">Add New Exercise</h2>
               <button onClick={() => { setShowModal(false); setError(null) }}
                 className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition">
-                ✕
+                <CloseIcon className="w-4 h-4" />
               </button>
             </div>
 
             {error && (
-              <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600">
-                ⚠ {error}
+              <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-center gap-2">
+                <WarningIcon className="w-4 h-4 flex-shrink-0" /> {error}
               </div>
             )}
 
@@ -252,8 +274,8 @@ export default function ExerciseLibrary() {
                     )}
                     <button
                       onClick={() => setForm(f => ({ ...f, doctor_media_url: '' }))}
-                      className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full text-white text-xs flex items-center justify-center hover:bg-black/70 transition">
-                      ✕
+                      className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full text-white flex items-center justify-center hover:bg-black/70 transition">
+                      <CloseIcon className="w-3 h-3" />
                     </button>
                   </div>
                 ) : (

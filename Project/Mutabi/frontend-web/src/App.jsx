@@ -15,6 +15,7 @@ import DoctorProgress from './pages/DoctorProgress'
 import DoctorProfile from './pages/DoctorProfile'
 import ExerciseLibrary from './pages/ExerciseLibrary'
 import SetPassword from './pages/SetPassword'
+import ResetPassword from './pages/ResetPassword'
 import './App.css'
 
 
@@ -61,6 +62,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 	
       <Route path="/dashboard" element={
         <ProtectedRoute>

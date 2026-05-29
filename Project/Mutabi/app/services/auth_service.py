@@ -1,7 +1,13 @@
 from app.repositories.user_repsitories import UserRepositories
-from app.utils.helpers import generate_token, generate_temp_password
+from app.utils.helpers import generate_token, generate_temp_password, generate_reset_token
 from app.models.EnumUsers import RoleUser
 import re
+import os
+from app.repositories.clinic_repository import ClinicRepository
+from app.integrations.email import ResendEmailClient
+from flask_jwt_extended import decode_token
+
+
 
 def validate_password_strength(password: str):
     if len(password) < 8:
@@ -76,6 +82,18 @@ class AuthService:
             "specialty": data["specialty"],
             "is_active": False
         })
+        clinic = ClinicRepository.get_by_id(data["clinic_id"])
+        clinic_name = clinic.name if clinic else ""
+        try:
+            client = ResendEmailClient()
+            client.send_doctor_invitation(
+            to_email=data["email"],
+            doctor_name=f"{data['first_name']} {data['second_name']}",
+            temp_password=temp_password,
+            clinic_name=clinic_name,
+        )
+        except Exception as e:
+            print(f"Email sending failed: {e}")
 
         return {"temp_password": temp_password, "user_id": str(user.id)}
 
@@ -89,17 +107,34 @@ class AuthService:
         if data.get("phone") and UserRepositories.phone_exists(data["phone"]):
             raise ValueError("Phone number already exists")
 
+        plain_password = data["password"]
+
+        is_active = data.get("is_active", False)
+
         user = UserRepositories.create({
             "clinic_id": data["clinic_id"],
             "first_name": data["first_name"],
             "second_name": data["second_name"],
             "email": data["email"],
             "phone": data["phone"],
-            "password": data["password"],
+            "password": plain_password,
             "role": RoleUser.Parent,
             "relationship_type": data["relationship_type"],
-            "is_active": True
+            "is_active": is_active
         })
+
+        clinic = ClinicRepository.get_by_id(data["clinic_id"])
+        clinic_name = clinic.name if clinic else ""
+        try:
+            client = ResendEmailClient()
+            client.send_parent_invitation(
+                to_email=data["email"],
+                parent_name=f"{data['first_name']} {data['second_name']}",
+                password=plain_password,
+                clinic_name=clinic_name,
+            )
+        except Exception as e:
+            print(f"Parent invitation email failed: {e}")
 
         token = generate_token(str(user.id), user.role.value, str(user.clinic_id))
 
@@ -132,6 +167,47 @@ class AuthService:
 
         return {"message": "Password updated successfully"}
     
+    @staticmethod
+    def forgot_password(email: str) -> dict:
+        user = UserRepositories.get_by_email(email)
+        if not user:
+            return {"message": "إذا كان البريد الإلكتروني مسجلاً، سيصلك رابط إعادة التعيين قريباً"}
+
+        token = generate_reset_token(str(user.id))
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        reset_link = f"{frontend_url}/reset-password?token={token}"
+
+        try:
+            client = ResendEmailClient()
+            client.send_password_reset(
+                to_email=user.email,
+                user_name=f"{user.first_name} {user.second_name}",
+                reset_link=reset_link,
+            )
+        except Exception as e:
+            print(f"Password reset email failed: {e}")
+
+        return {"message": "إذا كان البريد الإلكتروني مسجلاً، سيصلك رابط إعادة التعيين قريباً"}
+
+    @staticmethod
+    def reset_password_by_token(token: str, new_password: str) -> dict:
+        try:
+            claims = decode_token(token)
+        except Exception:
+            raise ValueError("الرابط غير صالح أو منتهي الصلاحية")
+
+        if claims.get("type") != "password_reset":
+            raise ValueError("الرابط غير صالح")
+
+        user_id = claims["sub"]
+        user = UserRepositories.get_by_id(user_id)
+        if not user:
+            raise ValueError("المستخدم غير موجود")
+
+        validate_password_strength(new_password)
+        UserRepositories.update(user_id, {"password": new_password})
+        return {"message": "تم تغيير كلمة المرور بنجاح"}
+
     @staticmethod
     def set_password(user_id: str, tempPassword: str, new_password: str):
         user = UserRepositories.get_by_id(user_id)

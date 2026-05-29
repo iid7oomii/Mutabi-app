@@ -34,7 +34,6 @@ export async function apiPut(path, body) {
   })
 }
 
-// Sessions stored locally in AsyncStorage for Progress screen
 const SESSIONS_KEY = 'logged_sessions'
 
 export async function saveSessionLocally(session) {

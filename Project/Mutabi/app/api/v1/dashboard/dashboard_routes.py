@@ -4,6 +4,14 @@ import os
 from app.services.dashboard_service import DashboardService
 from app.api.v1.middleware.role_required import role_required
 from app.repositories.plan_exercises_repository import PlanExercisesRepository
+from app.repositories.children_repository import ChildrenRepository
+from app.repositories.doctor_notes_repository import DoctorNotesRepository
+from app.repositories.appointments_repository import AppointmentsRepository
+from app.repositories.therapyplansrepository import TherapyPlansRepository
+from app.repositories.user_repsitories import UserRepositories
+from app.repositories.clinic_repository import ClinicRepository
+from app.repositories.feedback_repository import FeedbackRepository
+from datetime import datetime, timedelta
 
 
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/dashboard")
@@ -43,6 +51,19 @@ def doctor_dashboard():
         return jsonify({"error": str(e)}), 500
     
 
+def calculate_streak(child_id: str) -> int:
+    streak = 0
+    today = datetime.utcnow().date()
+    
+    for i in range(90):
+        day = today - timedelta(days=i)
+        feedbacks = FeedbackRepository.get_by_date_and_child(child_id, day)
+        if any(f.completion_status.value == 'completed' for f in feedbacks):
+            streak += 1
+        elif i > 0:
+            break
+    return streak
+
 @dashboard_bp.route("/parent", methods=["GET"])
 @role_required("Parent")
 def parent_home():
@@ -51,12 +72,7 @@ def parent_home():
         parent_id = claims["sub"]
         clinic_id = claims["clinic_id"]
 
-        from app.repositories.children_repository import ChildrenRepository
-        from app.repositories.doctor_notes_repository import DoctorNotesRepository
-        from app.repositories.appointments_repository import AppointmentsRepository
-        from app.repositories.therapyplansrepository import TherapyPlansRepository
-        from app.repositories.user_repsitories import UserRepositories
-        from app.repositories.clinic_repository import ClinicRepository
+
 
         parent = UserRepositories.get_by_id(parent_id)
         clinic = ClinicRepository.get_by_id(clinic_id)
@@ -70,6 +86,7 @@ def parent_home():
                 "active_plan": None,
                 "latest_note": None,
                 "upcoming_appointment": None,
+                "email": parent.email,
             }), 200
 
         child = children[0]
@@ -81,6 +98,7 @@ def parent_home():
 
         return jsonify({
             "parent_name": f"{parent.first_name} {parent.second_name}",
+            "email": parent.email,
             "clinic_name": clinic.name if clinic else "",
             "child": {
                 "id": child_id,
@@ -101,11 +119,38 @@ def parent_home():
                 "reps": pe.reps,
                 "duration_minutes": pe.duration_minutes,
                 }
-                for pe in today_exercises
-            
-            ],
+                for pe in today_exercises ],
+            "weekly_streak": calculate_streak(child_id),
             
         }), 200
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+@dashboard_bp.route("/parent/exercises/<day>", methods=["GET"])
+@role_required("Parent")
+def get_exercises_by_day(day):
+    try:
+        claims = g.jwt_claims
+        parent_id = claims["sub"]
+        
+        children = ChildrenRepository.get_by_parent(parent_id)
+        if not children:
+            return jsonify([]), 200
+        
+        child_id = str(children[0].id)
+        exercises = PlanExercisesRepository.get_by_day_and_child(child_id, day)
+        
+        return jsonify([
+            {
+                "id": str(pe.id),
+                "exercise_title": pe.exercise.title,
+                "exercise_description": pe.exercise.description,
+                "reps": pe.reps,
+                "duration_minutes": pe.duration_minutes,
+            }
+            for pe in exercises
+        ]), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

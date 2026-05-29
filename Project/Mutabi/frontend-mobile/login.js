@@ -5,7 +5,7 @@ import LogoMark from './assets/logo-mark.svg'
 import {
   View, Text, TextInput, TouchableOpacity,
   StyleSheet, SafeAreaView, KeyboardAvoidingView,
-  Platform, ActivityIndicator, Alert,
+  Platform, ActivityIndicator,
 } from 'react-native'
 import { apiPost } from './utils/api'
 
@@ -20,7 +20,7 @@ export default function Login({ navigation }) {
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
-      setError('Please enter your email and password')
+      setError('يرجى إدخال البريد الإلكتروني وكلمة المرور')
       return
     }
     setLoading(true)
@@ -30,12 +30,12 @@ export default function Login({ navigation }) {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || 'Login failed')
+        setError(data.error || 'فشل تسجيل الدخول')
         return
       }
 
       if (data.role !== 'parent') {
-        setError('This app is for parents only')
+        setError('هذا التطبيق مخصص للوالدين فقط')
         return
       }
 
@@ -43,9 +43,13 @@ export default function Login({ navigation }) {
         await AsyncStorage.setItem('token', data.token)
       }
 
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
+      if (!data.active) {
+        navigation.reset({ index: 0, routes: [{ name: 'SetPassword' }] })
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: 'Main' }] })
+      }
     } catch {
-      setError('Could not connect to server')
+      setError('تعذر الاتصال بالخادم')
     } finally {
       setLoading(false)
     }
@@ -61,8 +65,8 @@ export default function Login({ navigation }) {
         <View style={styles.logoRow}>
           <LogoMark width={44} height={44} />
           <View>
-            <Text style={styles.brandName}>Mutabi</Text>
-            <Text style={styles.brandSub}>Therapy Platform</Text>
+            <Text style={styles.brandName}>مُتابِع</Text>
+            <Text style={styles.brandSub}>منصة العلاج</Text>
           </View>
         </View>
 
@@ -74,12 +78,12 @@ export default function Login({ navigation }) {
         ) : null}
 
         {/* Email */}
-        <Text style={styles.label}>Email or Phone Number</Text>
+        <Text style={styles.label}>البريد الإلكتروني أو رقم الجوال</Text>
         <View style={styles.inputContainer}>
           <FontAwesome name="user" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
-            placeholder="Enter Email or Phone number"
+            placeholder="أدخل البريد الإلكتروني أو رقم الجوال"
             placeholderTextColor="#aaa"
             value={email}
             onChangeText={setEmail}
@@ -89,7 +93,7 @@ export default function Login({ navigation }) {
         </View>
 
         {/* Password */}
-        <Text style={styles.label}>Password</Text>
+        <Text style={styles.label}>كلمة المرور</Text>
         <View style={styles.inputContainer}>
           <FontAwesome name="lock" style={styles.inputIcon} />
           <TextInput
@@ -106,8 +110,8 @@ export default function Login({ navigation }) {
         </View>
 
         {/* Forgot Password */}
-        <TouchableOpacity onPress={() => Alert.alert('Forgot Password', 'Contact your clinic admin to reset your password.')}>
-          <Text style={styles.forgotPassword}>Forgot Password?</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+          <Text style={styles.forgotPassword}>نسيت كلمة المرور؟</Text>
         </TouchableOpacity>
 
         {/* Sign In */}
@@ -119,7 +123,10 @@ export default function Login({ navigation }) {
         >
           {loading
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.loginButtonText}>Sign In  →</Text>
+            : <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.loginButtonText}>تسجيل الدخول</Text>
+                <Ionicons name="arrow-forward" size={16} color="#fff" />
+              </View>
           }
         </TouchableOpacity>
 

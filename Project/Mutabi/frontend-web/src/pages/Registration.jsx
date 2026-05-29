@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import useAuthStore from '../store/authStore'
+import { WarningIcon, CheckIcon, ChevronDownIcon } from '../components/Icons'
 
 const RELATIONSHIPS = ['mother', 'father', 'guardian', 'therapist', 'doctor', 'other']
 
@@ -45,13 +46,15 @@ export default function Registration() {
     return [...required, ...rest].sort(() => Math.random() - 0.5).join('')
   }
 
+  const loadDoctors = () => {
+    fetch('/api/v1/users?role=Doctor', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => setDoctors(Array.isArray(data) ? data : []))
+      .catch(console.error)
+  }
+
   useEffect(() => {
-    if (isAdmin) {
-      fetch('/api/v1/users?role=Doctor', { credentials: 'include' })
-        .then(r => r.json())
-        .then(data => setDoctors(Array.isArray(data) ? data : []))
-        .catch(console.error)
-    }
+    if (isAdmin) loadDoctors()
   }, [isAdmin])
 
   const set = (key) => (e) => setForm(f => ({ ...f, [key]: e.target.value }))
@@ -108,7 +111,12 @@ export default function Registration() {
 
     if (!res.ok) {
       const e = await res.json()
-      throw new Error(e.error || 'Registration failed')
+      const msg = e.error || 'Registration failed'
+      if (msg.toLowerCase().includes('doctor')) {
+        loadDoctors()
+        setForm(f => ({ ...f, doctor_id: '' }))
+      }
+      throw new Error(msg)
     }
 
     setSuccess('Family registered successfully!')
@@ -136,12 +144,12 @@ export default function Registration() {
 
           {error && (
             <div className="mb-5 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-center gap-2">
-              <span>⚠</span> {error}
+              <WarningIcon className="w-4 h-4 flex-shrink-0" /> {error}
             </div>
           )}
           {success && (
             <div className="mb-5 px-4 py-3 bg-green-50 border border-green-100 rounded-xl text-sm text-green-600 flex items-center gap-2">
-              <span>✓</span> {success}
+              <CheckIcon className="w-4 h-4 flex-shrink-0" /> {success}
             </div>
           )}
 
@@ -188,7 +196,9 @@ export default function Registration() {
                     <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>
                     ))}
                 </select>
-                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+                <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <ChevronDownIcon className="w-3 h-3" />
+                </span>
                 </div>
             </div>
             <div>
@@ -255,7 +265,9 @@ export default function Registration() {
                           </option>
                         ))}
                       </select>
-                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+                      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <ChevronDownIcon className="w-3 h-3" />
+                </span>
                     </div>
                   </div>
                 ) : (

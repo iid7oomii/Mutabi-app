@@ -28,9 +28,9 @@ export default function ExerciseDetailScreen() {
   const steps = parseSteps(exercise.exercise_description || '')
 
   const stats = [
-    { label: 'DURATION', value: exercise.duration_minutes ? `${exercise.duration_minutes} mins` : '—' },
-    { label: 'SETS',     value: exercise.reps ? `${exercise.reps}x` : '—' },
-    { label: 'INTENSITY', value: 'Medium' },
+    { label: 'المدة',       value: exercise.duration_minutes ? `${exercise.duration_minutes} دقيقة` : '—' },
+    { label: 'المجموعات',  value: exercise.reps ? `${exercise.reps}x` : '—' },
+    { label: 'الشدة',       value: 'متوسطة' },
   ]
 
   return (
@@ -38,9 +38,9 @@ export default function ExerciseDetailScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#1a1a2e" />
+          <Ionicons name="arrow-forward" size={22} color="#1a1a2e" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{exercise.exercise_title || 'Exercise'}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{exercise.exercise_title || 'التمرين'}</Text>
         <TouchableOpacity style={styles.infoBtn}>
           <Ionicons name="information-circle-outline" size={22} color="#888" />
         </TouchableOpacity>
@@ -66,9 +66,9 @@ export default function ExerciseDetailScreen() {
           {stats.map(s => (
             <View key={s.label} style={styles.statItem}>
               <View style={styles.statIconWrap}>
-                {s.label === 'DURATION' && <Ionicons name="time-outline" size={18} color={ORANGE} />}
-                {s.label === 'SETS'     && <Ionicons name="repeat-outline" size={18} color={ORANGE} />}
-                {s.label === 'INTENSITY'&& <Ionicons name="pulse-outline" size={18} color={ORANGE} />}
+                {s.label === 'المدة'      && <Ionicons name="time-outline" size={18} color={ORANGE} />}
+                {s.label === 'المجموعات' && <Ionicons name="repeat-outline" size={18} color={ORANGE} />}
+                {s.label === 'الشدة'      && <Ionicons name="pulse-outline" size={18} color={ORANGE} />}
               </View>
               <Text style={styles.statValue}>{s.value}</Text>
               <Text style={styles.statLabel}>{s.label}</Text>
@@ -77,7 +77,7 @@ export default function ExerciseDetailScreen() {
         </View>
 
         {/* Step-by-step Guide */}
-        <Text style={styles.sectionTitle}>Step-by-step Guide</Text>
+        <Text style={styles.sectionTitle}>دليل خطوة بخطوة</Text>
         <View style={styles.stepsContainer}>
           {steps.map((step, i) => (
             <View key={i} style={styles.stepRow}>
@@ -86,7 +86,7 @@ export default function ExerciseDetailScreen() {
               </View>
               <View style={styles.stepContent}>
                 <Text style={styles.stepTitle}>
-                  {step.length < 30 ? step : `Step ${i + 1}`}
+                  {step.length < 30 ? step : `الخطوة ${i + 1}`}
                 </Text>
                 {step.length >= 30 && (
                   <Text style={styles.stepDesc}>{step}</Text>
@@ -109,7 +109,7 @@ export default function ExerciseDetailScreen() {
           })}
         >
           <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-          <Text style={styles.recordBtnText}>Record Results</Text>
+          <Text style={styles.recordBtnText}>تسجيل النتائج</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

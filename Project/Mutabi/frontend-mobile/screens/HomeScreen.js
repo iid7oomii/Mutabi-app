@@ -8,15 +8,17 @@ import { Ionicons, FontAwesome, FontAwesome6 } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import Header from '../components/Header'
 import { apiGet } from '../utils/api'
+import { useFocusEffect } from '@react-navigation/native'
+import { useCallback } from 'react'
 
 const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
 
 function greeting() {
   const h = new Date().getHours()
-  if (h < 12) return 'Good morning'
-  if (h < 18) return 'Good afternoon'
-  return 'Good evening'
+  if (h < 12) return 'صباح الخير'
+  if (h < 18) return 'مساء الخير'
+  return 'مساء النور'
 }
 
 export default function HomeScreen({ onTabPress }) {
@@ -25,20 +27,28 @@ export default function HomeScreen({ onTabPress }) {
   const [loading, setLoading] = useState(true)
   const [error, setError]     = useState('')
 
-  useEffect(() => { fetchData() }, [])
+
 
   const fetchData = async () => {
     try {
       const res  = await apiGet('/dashboard/parent')
       const json = await res.json()
-      if (!res.ok) { setError(json.error || 'Failed to load data'); return }
+      if (!res.ok) { setError(json.error || 'فشل في تحميل البيانات'); return }
       setData(json)
     } catch {
-      setError('Could not connect to server')
+      setError('تعذر الاتصال بالخادم')
     } finally {
       setLoading(false)
     }
   }
+
+	useFocusEffect(
+	useCallback(() => {
+			setLoading(true)
+			setError('')
+			fetchData()
+}, [])
+)
 
   if (loading) return (
     <View style={styles.center}>
@@ -50,7 +60,7 @@ export default function HomeScreen({ onTabPress }) {
     <View style={styles.center}>
       <Text style={styles.errorText}>{error}</Text>
       <TouchableOpacity onPress={() => { setLoading(true); setError(''); fetchData() }} style={styles.retryBtn}>
-        <Text style={styles.retryText}>Retry</Text>
+        <Text style={styles.retryText}>إعادة المحاولة</Text>
       </TouchableOpacity>
     </View>
   )
@@ -73,8 +83,8 @@ export default function HomeScreen({ onTabPress }) {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
         {/* Greeting */}
-        <Text style={styles.greeting}>{greeting()}, {parentName}</Text>
-        <Text style={styles.subGreeting}>Here's how we're supporting {childName} today.</Text>
+        <Text style={styles.greeting}>{greeting()}، {parentName}</Text>
+        <Text style={styles.subGreeting}>إليك كيف ندعم {childName} اليوم.</Text>
 
         {/* Priority Goal Card */}
         {todayEx ? (
@@ -84,20 +94,23 @@ export default function HomeScreen({ onTabPress }) {
             style={styles.goalCard}
           >
             <View style={styles.priorityBadge}>
-              <Text style={styles.priorityText}>★  Priority Goal</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Ionicons name="star" size={12} color="#FFD700" />
+                <Text style={styles.priorityText}>الهدف الأولوي</Text>
+              </View>
             </View>
             <Text style={styles.goalTitle}>{todayEx.exercise_title}</Text>
             <View style={styles.goalMeta}>
               {todayEx.duration_minutes ? (
                 <View style={styles.metaItem}>
                   <Ionicons name="time-outline" size={13} color="#ccc" />
-                  <Text style={styles.metaText}>{todayEx.duration_minutes} mins</Text>
+                  <Text style={styles.metaText}>{todayEx.duration_minutes} دقيقة</Text>
                 </View>
               ) : null}
               {todayEx.reps ? (
                 <View style={styles.metaItem}>
                   <Ionicons name="repeat-outline" size={13} color="#ccc" />
-                  <Text style={styles.metaText}>{todayEx.reps} reps</Text>
+                  <Text style={styles.metaText}>{todayEx.reps} تكرار</Text>
                 </View>
               ) : null}
             </View>
@@ -106,20 +119,25 @@ export default function HomeScreen({ onTabPress }) {
               onPress={() => onTabPress('Therapy')}
               activeOpacity={0.85}
             >
-              <Text style={styles.startBtnText}>Start Session →</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Text style={styles.startBtnText}>ابدأ الجلسة</Text>
+                <Ionicons name="arrow-back" size={14} color="#fff" />
+              </View>
             </TouchableOpacity>
           </LinearGradient>
         ) : (
           <View style={styles.emptyGoalCard}>
             <Ionicons name="calendar-outline" size={32} color="#aaa" />
-            <Text style={styles.emptyGoalText}>No exercise assigned for today</Text>
+            <Text style={styles.emptyGoalText}>لا يوجد تمرين مخصص لليوم</Text>
           </View>
         )}
 
         {/* Doctor's Notes */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Doctor's Notes</Text>
-          <TouchableOpacity><Text style={styles.viewAll}>View All</Text></TouchableOpacity>
+          <Text style={styles.sectionTitle}>ملاحظات الطبيب</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('DoctorNotes', { childId: data?.child?.id })}>
+            <Text style={styles.viewAll}>عرض الكل</Text>
+          </TouchableOpacity>
         </View>
 
         {data?.latest_note ? (
@@ -131,7 +149,7 @@ export default function HomeScreen({ onTabPress }) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.docName}>{data.latest_note.doctor_name}</Text>
                 <Text style={styles.docSpecialty}>
-                  {data.latest_note.doctor_specialty || 'Therapist'}
+                  {data.latest_note.doctor_specialty || 'معالج'}
                 </Text>
               </View>
             </View>
@@ -142,32 +160,36 @@ export default function HomeScreen({ onTabPress }) {
           </View>
         ) : (
           <View style={styles.noteCard}>
-            <Text style={styles.emptyText}>No notes yet</Text>
+            <Text style={styles.emptyText}>لا توجد ملاحظات بعد</Text>
           </View>
         )}
 
         {/* Awareness Articles */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Awareness Articles</Text>
-          <TouchableOpacity><Text style={styles.viewAll}>Explore Library</Text></TouchableOpacity>
+          <Text style={styles.sectionTitle}>مقالات التوعية</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Articles')}>
+            <Text style={styles.viewAll}>استكشف المكتبة</Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.noteCard}>
-          <Text style={styles.emptyText}>Articles coming soon</Text>
+          <Text style={styles.emptyText}>المقالات قادمة قريباً</Text>
         </View>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>WEEKLY STREAK</Text>
+            <Text style={styles.statLabel}>الانتظام الأسبوعي</Text>
             <View style={styles.statValue}>
-              <Text style={styles.statNumber}>— Days</Text>
-              <FontAwesome6 name="fire" size={20} color="#ccc" />
+              <Text style={styles.statNumber}>
+								{data?.weekly_streak ? `${data.weekly_streak} أيام` : '0 أيام'}
+							</Text>
+							<FontAwesome6 name="fire" size={20} color={data?.weekly_streak ? ORANGE : '#ccc'} />
             </View>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>UPCOMING APPT.</Text>
+            <Text style={styles.statLabel}>الموعد القادم</Text>
             <View style={styles.statValue}>
-              <Text style={styles.statNumber}>{apptDate || '—'}</Text>
+              <Text style={styles.statNumber}>{apptDate || 'لا يوجد'}</Text>
               <FontAwesome name="calendar-o" size={18} color={BLUE} />
             </View>
           </View>

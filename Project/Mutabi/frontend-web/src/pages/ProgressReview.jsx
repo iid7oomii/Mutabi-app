@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { ChevronRightIcon, DotIcon } from '../components/Icons'
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
@@ -105,11 +106,11 @@ export default function ProgressReview() {
             <button onClick={() => navigate('/patients')} className="hover:text-gray-600 transition">
               Patients
             </button>
-            <span>›</span>
+            <ChevronRightIcon className="w-3 h-3" />
             <button onClick={() => navigate(`/patients/${id}`)} className="hover:text-gray-600 transition">
               {patient?.first_name} {patient?.second_name}
             </button>
-            <span>›</span>
+            <ChevronRightIcon className="w-3 h-3" />
             <span className="text-gray-700 font-medium">Session Logs</span>
           </div>
 
@@ -232,8 +233,9 @@ export default function ProgressReview() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`text-sm font-medium ${PAIN_COLORS[f.pain_level] || 'text-gray-400'}`}>
-                            ● {PAIN_LABELS[f.pain_level] || f.pain_level || '—'}
+                          <span className={`inline-flex items-center gap-1 text-sm font-medium ${PAIN_COLORS[f.pain_level] || 'text-gray-400'}`}>
+                            <DotIcon className="w-2.5 h-2.5 flex-shrink-0" />
+                            {PAIN_LABELS[f.pain_level] || f.pain_level || '—'}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">

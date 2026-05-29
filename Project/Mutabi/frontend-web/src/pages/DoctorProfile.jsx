@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { ChevronRightIcon } from '../components/Icons'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -87,7 +88,7 @@ export default function DoctorProfile() {
                 <button onClick={() => navigate('/doctors')} className="hover:text-gray-600 transition">
                 Doctors Management
                 </button>
-                <span>›</span>
+                <ChevronRightIcon className="w-3 h-3" />
                 <span className="text-gray-700 font-medium">Dr. {fullName}</span>
             </div>
 

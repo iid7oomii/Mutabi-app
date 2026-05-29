@@ -26,6 +26,7 @@ class AuthFacade:
 
     @staticmethod
     def parent_signup(data: dict) -> dict:
+        data["is_active"] = True
         return AuthService.create_parent(data)
 
     @staticmethod
@@ -47,3 +48,11 @@ class AuthFacade:
     @staticmethod
     def set_password(user_id: str, tempPassword: str, newPassword: str) -> dict:
         return AuthService.set_password(user_id, tempPassword, newPassword)
+
+    @staticmethod
+    def forgot_password(email: str) -> dict:
+        return AuthService.forgot_password(email)
+
+    @staticmethod
+    def reset_password_by_token(token: str, new_password: str) -> dict:
+        return AuthService.reset_password_by_token(token, new_password)

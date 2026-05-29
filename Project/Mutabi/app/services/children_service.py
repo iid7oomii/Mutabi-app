@@ -6,6 +6,15 @@ from app.repositories.appointments_repository import AppointmentsRepository
 from app.repositories.plan_exercises_repository import PlanExercisesRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.models.EnumUsers import RoleUser
+from app import db
+from app.models.Children import Children
+from app.models.User import Users
+from app import db
+from app.models.Exercises_Feedback import ExercisesFeedback
+from app.models.Plan_Exercises import PlanExercises
+from app.models.Therapy_plans import TherapyPlans
+from app.models.Appointments import Appointments
+from app.models.Doctor_Notes import DoctorNotes
 
 
 class ChildrenService:
@@ -140,49 +149,127 @@ class ChildrenService:
         return child.to_dict()
 
     @staticmethod
+    def _cascade_delete_child(child_id: str):
+        plan_ids = [
+            str(p.id)
+            for p in db.session.query(TherapyPlans).filter_by(child_id=child_id).all()
+        ]
+        if plan_ids:
+            pe_ids = [
+                str(pe.id)
+                for pe in db.session.query(PlanExercises).filter(
+                    PlanExercises.therapy_plan_id.in_(plan_ids)
+                ).all()
+            ]
+            if pe_ids:
+                db.session.query(ExercisesFeedback).filter(
+                    ExercisesFeedback.plan_exercise_id.in_(pe_ids)
+                ).delete(synchronize_session=False)
+            db.session.query(PlanExercises).filter(
+                PlanExercises.therapy_plan_id.in_(plan_ids)
+            ).delete(synchronize_session=False)
+        db.session.query(TherapyPlans).filter_by(child_id=child_id).delete(synchronize_session=False)
+        db.session.query(Appointments).filter_by(child_id=child_id).delete(synchronize_session=False)
+        db.session.query(DoctorNotes).filter_by(child_id=child_id).delete(synchronize_session=False)
+
+    @staticmethod
     def delete(child_id: str) -> dict:
-        deleted = ChildrenRepository.delete(child_id)
-        if not deleted:
+
+        child = db.session.get(Children, child_id)
+        if not child:
             raise ValueError("Child not found")
+
+        parent_id = str(child.parent_id)
+
+        ChildrenService._cascade_delete_child(child_id)
+        db.session.delete(child)
+        db.session.flush()
+
+        has_other_children = db.session.query(Children).filter_by(parent_id=parent_id).count() > 0
+        if not has_other_children:
+            parent = db.session.get(Users, parent_id)
+            if parent:
+                db.session.delete(parent)
+
+        db.session.commit()
         return {"message": "Child deleted successfully"}
     
 
     @staticmethod
     def register_family(data: dict, claims: dict) -> dict:
         from app import db
-        from app.services.auth_service import AuthService
-        
+
+        if UserRepositories.email_exists(data["parent_email"]):
+            raise ValueError("Email already exists")
+
+        if data.get("parent_phone") and UserRepositories.phone_exists(data["parent_phone"]):
+            raise ValueError("Phone number already exists")
+
+        if claims.get("role", "").lower() == "doctor":
+            doctor_id = claims["sub"]
+        else:
+            doctor_id = data.get("doctor_id")
+
+        if not doctor_id:
+            raise ValueError("Please assign a doctor.")
+
+        if not UserRepositories.get_by_id(doctor_id):
+            raise ValueError("Selected doctor does not exist. Please refresh the page and try again.")
+
+        if not ClinicRepository.get_by_id(claims["clinic_id"]):
+            raise ValueError("Clinic not found")
+
+        plain_password = data["parent_password"]
+
+        parent_user = None
         try:
-            
             parent_user = UserRepositories.create({
                 "clinic_id": claims["clinic_id"],
                 "first_name": data["parent_first_name"],
                 "second_name": data["parent_second_name"],
                 "email": data["parent_email"],
                 "phone": data.get("parent_phone"),
-                "password": data["parent_password"],
+                "password": plain_password,
                 "role": RoleUser.Parent,
                 "relationship_type": data["parent_relationship"],
-                "is_active": True
+                "is_active": False,
             })
+        except Exception as e:
+            db.session.rollback()
+            raise ValueError(str(e))
 
+        try:
             child = ChildrenRepository.create({
                 "clinic_id": claims["clinic_id"],
                 "parent_id": str(parent_user.id),
-                "doctor_id": data["doctor_id"],
+                "doctor_id": doctor_id,
                 "first_name": data["child_first_name"],
                 "second_name": data["child_second_name"],
                 "date_of_birth": data["date_of_birth"],
                 "diagnosis_notes": data.get("diagnosis_notes"),
             })
-
-            db.session.commit()
-
-            return {
-                "parent": parent_user.to_dict(exclude=["password"]),
-                "child": child.to_dict(),
-            }
-
         except Exception as e:
-            db.session.rollback()
-            raise ValueError(str(e))
+            try:
+                db.session.delete(parent_user)
+                db.session.commit()
+            except Exception:
+                db.session.rollback()
+            raise ValueError("Failed to create child record. Please try again.")
+
+        clinic = ClinicRepository.get_by_id(claims["clinic_id"])
+        clinic_name = clinic.name if clinic else ""
+        try:
+            from app.integrations.email import ResendEmailClient
+            ResendEmailClient().send_parent_invitation(
+                to_email=data["parent_email"],
+                parent_name=f"{data['parent_first_name']} {data['parent_second_name']}",
+                password=plain_password,
+                clinic_name=clinic_name,
+            )
+        except Exception as e:
+            print(f"Parent invitation email failed: {e}")
+
+        return {
+            "parent": parent_user.to_dict(exclude=["password"]),
+            "child": child.to_dict(),
+        }

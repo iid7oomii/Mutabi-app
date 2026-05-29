@@ -12,9 +12,9 @@ const MOCK_NOTIFICATIONS = [
   {
     id: '1',
     type: 'doctor',
-    title: 'Dr. Sarah Jenkins',
-    body: "I've reviewed your latest progress log. Let's discuss the new coping strategies",
-    time: '10:42 AM',
+    title: 'د. سارة جنكينز',
+    body: 'لقد راجعت سجل تقدمك الأخير. دعنا نناقش استراتيجيات التعامل الجديدة.',
+    time: '10:42 ص',
     isNew: true,
     icon: 'person',
     iconBg: '#FFF3E8',
@@ -23,9 +23,9 @@ const MOCK_NOTIFICATIONS = [
   {
     id: '2',
     type: 'appointment',
-    title: 'Upcoming Appointment',
-    body: 'Reminder: You have a therapy session scheduled with Dr. Sarah Jenkins...',
-    time: 'Yesterday',
+    title: 'موعد قادم',
+    body: 'تذكير: لديك جلسة علاجية مجدولة مع د. سارة جنكينز...',
+    time: 'أمس',
     isNew: true,
     icon: 'calendar-outline',
     iconBg: '#EEF3FA',
@@ -34,9 +34,9 @@ const MOCK_NOTIFICATIONS = [
   {
     id: '3',
     type: 'milestone',
-    title: 'Milestone Reached!',
-    body: 'Congratulations on completing 7 consecutive days of mindfulness...',
-    time: 'Oct 24',
+    title: 'تم بلوغ إنجاز!',
+    body: 'تهانينا على إتمام 7 أيام متتالية من اليقظة الذهنية...',
+    time: '24 أكت',
     isNew: false,
     icon: 'trophy-outline',
     iconBg: '#E8F5E9',
@@ -45,9 +45,9 @@ const MOCK_NOTIFICATIONS = [
   {
     id: '4',
     type: 'system',
-    title: 'System Update',
-    body: "We've updated our privacy policy and added new features to the Progress...",
-    time: 'Oct 20',
+    title: 'تحديث النظام',
+    body: 'لقد حدّثنا سياسة الخصوصية وأضفنا ميزات جديدة إلى التقدم...',
+    time: '20 أكت',
     isNew: false,
     icon: 'shield-checkmark-outline',
     iconBg: '#F5F5F5',
@@ -68,7 +68,7 @@ export default function NotificationsScreen() {
           <Text style={styles.itemTitle}>{item.title}</Text>
           {item.isNew && (
             <View style={styles.newBadge}>
-              <Text style={styles.newBadgeText}>New</Text>
+              <Text style={styles.newBadgeText}>جديد</Text>
             </View>
           )}
         </View>
@@ -83,25 +83,25 @@ export default function NotificationsScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#1a1a2e" />
+          <Ionicons name="arrow-forward" size={22} color="#1a1a2e" />
         </TouchableOpacity>
         <View style={[styles.headerLogo, { backgroundColor: '#EEF3FA' }]}>
           <Ionicons name="person" size={14} color={BLUE} />
         </View>
-        <Text style={styles.clinicName}>Clinic Name</Text>
+        <Text style={styles.clinicName}>اسم العيادة</Text>
         <Ionicons name="notifications" size={22} color={ORANGE} style={{ marginLeft: 'auto' }} />
       </View>
 
       {/* Subheader */}
       <View style={styles.subHeader}>
         <View>
-          <Text style={styles.pageTitle}>Notifications</Text>
+          <Text style={styles.pageTitle}>الإشعارات</Text>
           <Text style={styles.pageSubtitle}>
-            You have {MOCK_NOTIFICATIONS.filter(n => n.isNew).length} unread messages.
+            لديك {MOCK_NOTIFICATIONS.filter(n => n.isNew).length} رسائل غير مقروءة.
           </Text>
         </View>
         <TouchableOpacity>
-          <Text style={styles.markAll}>Mark all as read</Text>
+          <Text style={styles.markAll}>تحديد الكل كمقروء</Text>
         </TouchableOpacity>
       </View>
 

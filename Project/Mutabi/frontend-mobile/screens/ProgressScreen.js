@@ -11,8 +11,14 @@ import { apiGet, getLocalSessions } from '../utils/api'
 const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
 
-const FILTERS   = ['This Week', 'This Month', '3 Months']
-const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const FILTERS = ['هذا الأسبوع', 'هذا الشهر', '3 أشهر']
+
+const DAY_LABELS_SHORT   = ['إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت', 'أحد']
+const MONTH_NAMES        = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر']
+
+function dateStr(d) {
+  return d.toISOString().split('T')[0]
+}
 
 function getWeekStart() {
   const d = new Date()
@@ -20,10 +26,6 @@ function getWeekStart() {
   d.setDate(d.getDate() - day)
   d.setHours(0, 0, 0, 0)
   return d
-}
-
-function dateStr(d) {
-  return d.toISOString().split('T')[0]
 }
 
 function calcStreak(sessions) {
@@ -41,62 +43,148 @@ function calcStreak(sessions) {
 }
 
 function getSessionTag(s) {
-  if (s.completion_status === 'completed' && s.pain_level <= 2) return { label: 'Breakthrough', bg: '#FFF3E8', color: ORANGE }
-  if (s.completion_status === 'completed')                       return { label: 'Completed',   bg: '#E8F5E9', color: '#2E7D32' }
-  if (s.completion_status === 'partially_completed')            return { label: 'Review',       bg: '#EEF3FA', color: BLUE }
-  return { label: 'Skipped', bg: '#FFEBEE', color: '#B71C1C' }
+  if (s.completion_status === 'completed' && s.pain_level <= 2) return { label: 'إنجاز',      bg: '#FFF3E8', color: ORANGE }
+  if (s.completion_status === 'completed')                      return { label: 'مكتمل',      bg: '#E8F5E9', color: '#2E7D32' }
+  if (s.completion_status === 'partially_completed')            return { label: 'مراجعة',     bg: '#EEF3FA', color: BLUE }
+  return                                                               { label: 'تم التخطي', bg: '#FFEBEE', color: '#B71C1C' }
 }
 
-function ConsistencyChart({ weekData, todayIdx }) {
-  const max = Math.max(...weekData, 1)
+function buildChartData(sessions, filter) {
+  const now = new Date()
+
+  if (filter === 'هذا الأسبوع') {
+    const weekStart = getWeekStart()
+    const bars = DAY_LABELS_SHORT.map((label, i) => {
+      const d = new Date(weekStart)
+      d.setDate(weekStart.getDate() + i)
+      const ds = dateStr(d)
+      const count = sessions.filter(s => s.date === ds && s.completion_status === 'completed').length
+      return { label, count }
+    })
+    const todayIdx = (now.getDay() + 6) % 7
+    return { bars, highlightIdx: todayIdx }
+  }
+
+  if (filter === 'هذا الشهر') {
+    const year  = now.getFullYear()
+    const month = now.getMonth()
+    const daysInMonth = new Date(year, month + 1, 0).getDate()
+
+    const groupSize = Math.ceil(daysInMonth / 4)
+    const bars = []
+    for (let w = 0; w < 4; w++) {
+      const startDay = w * groupSize + 1
+      const endDay   = Math.min((w + 1) * groupSize, daysInMonth)
+      let count = 0
+      for (let day = startDay; day <= endDay; day++) {
+        const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        count += sessions.filter(s => s.date === ds && s.completion_status === 'completed').length
+      }
+      bars.push({ label: `الأسبوع ${w + 1}`, count })
+    }
+
+    const currentWeekIdx = Math.min(Math.floor((now.getDate() - 1) / groupSize), 3)
+    return { bars, highlightIdx: currentWeekIdx }
+  }
+
+  if (filter === '3 أشهر') {
+    const bars = []
+    for (let i = 2; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+      const year  = d.getFullYear()
+      const month = d.getMonth()
+      const lastDay = new Date(year, month + 1, 0).getDate()
+
+      let count = 0
+      for (let day = 1; day <= lastDay; day++) {
+        const ds = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+        count += sessions.filter(s => s.date === ds && s.completion_status === 'completed').length
+      }
+      bars.push({ label: MONTH_NAMES[month], count })
+    }
+    return { bars, highlightIdx: 2 }
+  }
+
+  return { bars: [], highlightIdx: -1 }
+}
+
+function ConsistencyChart({ bars, highlightIdx, selectedBar, onBarPress }) {
+  const max = Math.max(...bars.map(b => b.count), 1)
   return (
-    <View style={chartStyles.wrapper}>
-      {weekData.map((val, i) => {
-        const heightPct = max > 0 ? (val / max) : 0
-        const isToday = i === todayIdx
-        return (
-          <View key={i} style={chartStyles.col}>
-            <View style={chartStyles.track}>
-              <View style={[
-                chartStyles.bar,
-                { height: `${Math.max(heightPct * 100, val > 0 ? 10 : 3)}%` },
-                isToday ? chartStyles.barToday : chartStyles.barNormal,
-              ]} />
-            </View>
-            <Text style={[chartStyles.dayLabel, isToday && chartStyles.dayLabelToday]}>
-              {DAY_LABELS[i]}
-            </Text>
-          </View>
-        )
-      })}
+    <View>
+      <View style={chartStyles.wrapper}>
+        {bars.map((item, i) => {
+          const heightPct  = item.count > 0 ? item.count / max : 0
+          const isHighlight = i === highlightIdx
+          const isSelected  = i === selectedBar
+          return (
+            <TouchableOpacity
+              key={i}
+              style={chartStyles.col}
+              activeOpacity={0.7}
+              onPress={() => onBarPress(i)}
+            >
+              {/* Tooltip */}
+              {isSelected && (
+                <View style={chartStyles.tooltip}>
+                  <Text style={chartStyles.tooltipText}>{item.count} تمارين</Text>
+                  <View style={chartStyles.tooltipArrow} />
+                </View>
+              )}
+              <View style={chartStyles.track}>
+                <View style={[
+                  chartStyles.bar,
+                  { height: `${Math.max(heightPct * 100, item.count > 0 ? 10 : 3)}%` },
+                  isSelected  ? chartStyles.barSelected  :
+                  isHighlight ? chartStyles.barHighlight  :
+                  chartStyles.barNormal,
+                ]} />
+              </View>
+              <Text style={[chartStyles.dayLabel, isHighlight && chartStyles.dayLabelToday]}>
+                {item.label}
+              </Text>
+            </TouchableOpacity>
+          )
+        })}
+      </View>
+      {selectedBar !== null && (
+        <Text style={chartStyles.tapHint}>اضغط مرة أخرى لإخفاء</Text>
+      )}
     </View>
   )
 }
 
 const chartStyles = StyleSheet.create({
-  wrapper:       { flexDirection: 'row', height: 100, alignItems: 'flex-end', gap: 6, marginTop: 8 },
-  col:           { flex: 1, alignItems: 'center', gap: 6 },
-  track:         { flex: 1, width: '100%', justifyContent: 'flex-end', backgroundColor: '#f5f5f5', borderRadius: 4 },
-  bar:           { width: '100%', borderRadius: 4 },
-  barNormal:     { backgroundColor: '#c7d8f5' },
-  barToday:      { backgroundColor: BLUE },
-  dayLabel:      { fontSize: 10, color: '#aaa' },
-  dayLabelToday: { color: BLUE, fontWeight: '700' },
+  wrapper:        { flexDirection: 'row', height: 110, alignItems: 'flex-end', gap: 6, marginTop: 46, overflow: 'visible' },
+  col:            { flex: 1, alignItems: 'center', gap: 6, position: 'relative', overflow: 'visible' },
+  track:          { flex: 1, width: '100%', justifyContent: 'flex-end', backgroundColor: '#f5f5f5', borderRadius: 4 },
+  bar:            { width: '100%', borderRadius: 4 },
+  barNormal:      { backgroundColor: '#c7d8f5' },
+  barHighlight:   { backgroundColor: BLUE },
+  barSelected:    { backgroundColor: ORANGE },
+  dayLabel:       { fontSize: 8, color: '#aaa', textAlign: 'center' },
+  dayLabelToday:  { color: BLUE, fontWeight: '700' },
+  tooltip:        { position: 'absolute', top: -42, backgroundColor: '#1a1a2e', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 5, zIndex: 99, alignItems: 'center', minWidth: 70 },
+  tooltipText:    { fontSize: 11, color: '#fff', fontWeight: '700', textAlign: 'center' },
+  tooltipArrow:   { width: 0, height: 0, borderLeftWidth: 5, borderRightWidth: 5, borderTopWidth: 5, borderLeftColor: 'transparent', borderRightColor: 'transparent', borderTopColor: '#1a1a2e', marginTop: 1 },
+  tapHint:        { fontSize: 10, color: '#bbb', textAlign: 'center', marginTop: 6 },
 })
 
 export default function ProgressScreen({ activeTab }) {
-  const navigation                = useNavigation()
-  const [filter, setFilter]       = useState('This Week')
-  const [sessions, setSessions]   = useState([])
+  const navigation                  = useNavigation()
+  const [filter, setFilter]         = useState('هذا الأسبوع')
+  const [sessions, setSessions]     = useState([])
   const [clinicName, setClinicName] = useState('')
-  const [loading, setLoading]     = useState(true)
+  const [loading, setLoading]       = useState(true)
+  const [selectedBar, setSelectedBar] = useState(null)
 
   useEffect(() => { loadData() }, [])
 
-  // Reload when Progress tab becomes active
   useEffect(() => {
     if (activeTab === 'Progress') loadData()
   }, [activeTab])
+
+  useEffect(() => { setSelectedBar(null) }, [filter])
 
   const loadData = async () => {
     setLoading(true)
@@ -109,29 +197,22 @@ export default function ProgressScreen({ activeTab }) {
       const dash = await dashRes.json()
       setClinicName(dash.clinic_name || '')
     } catch {
-      /* ignore */
     } finally {
       setLoading(false)
     }
   }
 
-  // Build weekly bar data (0 = Mon … 6 = Sun)
-  const todayIdx   = (new Date().getDay() + 6) % 7
-  const weekStart  = getWeekStart()
-  const weekData   = DAY_LABELS.map((_, i) => {
-    const d = new Date(weekStart)
-    d.setDate(weekStart.getDate() + i)
-    const ds = dateStr(d)
-    return sessions.filter(s => s.date === ds && s.completion_status === 'completed').length
-  })
+  const { bars, highlightIdx } = buildChartData(sessions, filter)
+  const streak    = calcStreak(sessions)
+  const totalDone = sessions.filter(s => s.completion_status === 'completed').length
 
-  const streak     = calcStreak(sessions)
-  const totalDone  = sessions.filter(s => s.completion_status === 'completed').length
-
-  // Recent sessions (last 20, newest first)
   const recent = [...sessions]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 20)
+
+  const handleBarPress = (i) => {
+    setSelectedBar(prev => prev === i ? null : i)
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -141,8 +222,8 @@ export default function ProgressScreen({ activeTab }) {
       />
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
-        <Text style={styles.title}>Progress Timeline</Text>
-        <Text style={styles.subtitle}>Track your therapy journey and milestones.</Text>
+        <Text style={styles.title}>مسار التقدم</Text>
+        <Text style={styles.subtitle}>تتبع رحلتك العلاجية وإنجازاتك.</Text>
 
         {/* Filter Tabs */}
         <View style={styles.filterRow}>
@@ -152,7 +233,9 @@ export default function ProgressScreen({ activeTab }) {
               style={[styles.filterBtn, filter === f && styles.filterBtnActive]}
               onPress={() => setFilter(f)}
             >
-              <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>{f}</Text>
+              <Text style={[styles.filterText, filter === f && styles.filterTextActive]} numberOfLines={1}>
+                {f}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -164,28 +247,29 @@ export default function ProgressScreen({ activeTab }) {
             {/* Consistency Trend */}
             <View style={styles.card}>
               <View style={styles.cardHeaderRow}>
-                <Text style={styles.cardTitle}>Consistency Trend</Text>
-                <View style={styles.onTrackBadge}>
-                  <Text style={styles.onTrackText}>🔥 On Track</Text>
-                </View>
+                <Text style={styles.cardTitle}>منحنى الانتظام</Text>
               </View>
-              <ConsistencyChart weekData={weekData} todayIdx={todayIdx} />
+              <ConsistencyChart
+                bars={bars}
+                highlightIdx={highlightIdx}
+                selectedBar={selectedBar}
+                onBarPress={handleBarPress}
+              />
             </View>
 
             {/* Streak */}
             <View style={styles.streakCard}>
-              <Ionicons name="time-outline" size={20} color="#ccc" />
-              <Text style={styles.streakSub}>Current Streak</Text>
-              <Text style={styles.streakNum}>{streak} Days</Text>
+              <Text style={styles.streakSub}>الانتظام الحالي</Text>
+              <Text style={styles.streakNum}>{streak} أيام</Text>
               <Text style={styles.streakMsg}>
-                {streak > 0 ? "You're building a strong habit. Keep going!" : 'Start logging sessions to build your streak!'}
+                {streak > 0 ? 'أنت تبني عادة قوية. استمر!' : 'ابدأ بتسجيل الجلسات لبناء انتظامك!'}
               </Text>
             </View>
 
             {/* Sessions Completed */}
             <View style={styles.sessionsCard}>
               <View>
-                <Text style={styles.sessionsLabel}>Sessions Completed</Text>
+                <Text style={styles.sessionsLabel}>الجلسات المكتملة</Text>
                 <Text style={styles.sessionsNum}>{totalDone}</Text>
               </View>
               <View style={styles.checkCircle}>
@@ -194,20 +278,19 @@ export default function ProgressScreen({ activeTab }) {
             </View>
 
             {/* Recent Sessions */}
-            <Text style={styles.recentTitle}>Recent Sessions</Text>
+            <Text style={styles.recentTitle}>الجلسات الأخيرة</Text>
             {recent.length === 0 ? (
               <View style={styles.emptyCard}>
                 <Ionicons name="journal-outline" size={36} color="#ccc" />
-                <Text style={styles.emptyText}>No sessions logged yet.</Text>
-                <Text style={styles.emptySubText}>Complete exercises and log results to see them here.</Text>
+                <Text style={styles.emptyText}>لا توجد جلسات مسجلة بعد.</Text>
+                <Text style={styles.emptySubText}>أكمل التمارين وسجّل النتائج لعرضها هنا.</Text>
               </View>
             ) : (
               recent.map((s, i) => {
                 const tag  = getSessionTag(s)
-                const date = new Date(s.created_at).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+                const date = new Date(s.created_at).toLocaleDateString('ar-SA', { weekday: 'short', month: 'short', day: 'numeric' })
                 return (
                   <View key={i} style={styles.sessionItem}>
-                    {/* Status dot */}
                     <View style={[styles.sessionDot, { backgroundColor: tag.color }]}>
                       <Ionicons
                         name={s.completion_status === 'completed' ? 'checkmark' : s.completion_status === 'skipped' ? 'close' : 'remove'}
@@ -241,33 +324,27 @@ const styles = StyleSheet.create({
   title:    { fontSize: 24, fontWeight: '700', color: '#1a1a2e', marginBottom: 4 },
   subtitle: { fontSize: 13, color: '#888', marginBottom: 20 },
 
-  /* Filters */
-  filterRow:      { flexDirection: 'row', gap: 8, marginBottom: 20 },
-  filterBtn:      { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f5f5f5' },
-  filterBtnActive:{ backgroundColor: BLUE },
-  filterText:     { fontSize: 13, color: '#888', fontWeight: '500' },
+  filterRow:       { flexDirection: 'row', gap: 6, marginBottom: 20 },
+  filterBtn:       { flex: 1, paddingVertical: 9, borderRadius: 20, backgroundColor: '#f5f5f5', alignItems: 'center' },
+  filterBtnActive: { backgroundColor: BLUE },
+  filterText:      { fontSize: 12, color: '#888', fontWeight: '600', textAlign: 'center' },
   filterTextActive:{ color: '#fff', fontWeight: '600' },
 
-  /* Consistency chart card */
-  card:           { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  cardHeaderRow:  { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardTitle:      { fontSize: 15, fontWeight: '700', color: '#1a1a2e' },
-  onTrackBadge:   { backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
-  onTrackText:    { fontSize: 12, color: '#2E7D32', fontWeight: '600' },
+  card:          { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
+  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  cardTitle:     { fontSize: 15, fontWeight: '700', color: '#1a1a2e' },
+  filterHint:    { fontSize: 12, color: '#aaa' },
 
-  /* Streak */
-  streakCard:  { backgroundColor: '#0F4C81', borderRadius: 16, padding: 20, marginBottom: 16, alignItems: 'flex-start', gap: 4 },
-  streakSub:   { fontSize: 13, color: '#cce0ff' },
-  streakNum:   { fontSize: 36, fontWeight: '700', color: '#fff' },
-  streakMsg:   { fontSize: 13, color: '#cce0ff', lineHeight: 18 },
+  streakCard: { backgroundColor: '#0F4C81', borderRadius: 16, padding: 20, marginBottom: 16, alignItems: 'flex-start', gap: 4 },
+  streakSub:  { fontSize: 13, color: '#cce0ff' },
+  streakNum:  { fontSize: 36, fontWeight: '700', color: '#fff' },
+  streakMsg:  { fontSize: 13, color: '#cce0ff', lineHeight: 18 },
 
-  /* Sessions completed */
   sessionsCard:  { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
   sessionsLabel: { fontSize: 13, color: '#888', marginBottom: 4 },
   sessionsNum:   { fontSize: 32, fontWeight: '700', color: '#1a1a2e' },
   checkCircle:   { width: 48, height: 48, borderRadius: 24, backgroundColor: '#EEF3FA', alignItems: 'center', justifyContent: 'center' },
 
-  /* Recent sessions */
   recentTitle:    { fontSize: 16, fontWeight: '700', color: '#1a1a2e', marginBottom: 16 },
   sessionItem:    { flexDirection: 'row', gap: 14, marginBottom: 16 },
   sessionDot:     { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 4 },

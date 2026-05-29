@@ -1,7 +1,7 @@
-// src/pages/DoctorProgress.jsx
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { DotIcon } from '../components/Icons'
 
 function formatDate(dateStr) {
   if (!dateStr) return '—'
@@ -200,8 +200,9 @@ export default function DoctorProgress() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`text-sm font-medium ${PAIN_COLORS[f.pain_level] || 'text-gray-400'}`}>
-                        ● {PAIN_LABELS[f.pain_level] || f.pain_level || '—'}
+                      <span className={`inline-flex items-center gap-1 text-sm font-medium ${PAIN_COLORS[f.pain_level] || 'text-gray-400'}`}>
+                        <DotIcon className="w-2.5 h-2.5 flex-shrink-0" />
+                        {PAIN_LABELS[f.pain_level] || f.pain_level || '—'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{f.parent_name}</td>

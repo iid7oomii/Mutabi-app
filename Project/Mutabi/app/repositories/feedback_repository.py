@@ -84,3 +84,17 @@ class FeedbackRepository:
             )
             .first()
         )
+    
+
+    @staticmethod
+    def get_by_date_and_child(child_id: str, date) -> List[ExercisesFeedback]:
+        return (
+            db.session.query(ExercisesFeedback)
+            .join(PlanExercises)
+            .join(TherapyPlans)
+            .filter(
+                TherapyPlans.child_id == child_id,
+                ExercisesFeedback.feedback_date == date,
+            )
+            .all()
+        )

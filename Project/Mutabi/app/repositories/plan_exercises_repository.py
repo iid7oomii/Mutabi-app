@@ -1,6 +1,10 @@
 from app.models.Plan_Exercises import PlanExercises
 from app import db
 from typing import List, Optional
+from app.models.Therapy_plans import TherapyPlans
+from app.models.EnumStatus import EnumStatus
+from app.models.EnumDays import EnumDays
+from app.models.Plan_Exercises import PlanExercises
 
 
 class PlanExercisesRepository:
@@ -82,5 +86,32 @@ class PlanExercisesRepository:
                 TherapyPlans.status == EnumStatus.Active,
                 PlanExercises.target_days == today_enum
             )
+            .all()
+        )
+
+    @staticmethod
+    def get_by_day_and_child(child_id: str, day: str) -> List[PlanExercises]:
+
+        try:
+            day_enum = EnumDays(day.lower())
+        except ValueError:
+            return []
+
+        return (
+            db.session.query(PlanExercises)
+            .join(TherapyPlans)
+            .filter(
+                TherapyPlans.child_id == child_id,
+                TherapyPlans.status == EnumStatus.Active,
+                PlanExercises.target_days == day_enum
+            )
+            .all()
+        )
+    
+    @staticmethod
+    def get_by_exercise(exercise_id: str):
+        return (
+            db.session.query(PlanExercises)
+            .filter(PlanExercises.exercise_id == exercise_id)
             .all()
         )

@@ -15,3 +15,11 @@ def generate_token(user_id: str, role: str, clinic_id: str, expires_in: int = 24
         additional_claims={"role": role, "clinic_id": clinic_id},
         expires_delta=timedelta(hours=expires_in)
     )
+
+
+def generate_reset_token(user_id: str) -> str:
+    return create_access_token(
+        identity=user_id,
+        additional_claims={"type": "password_reset"},
+        expires_delta=timedelta(hours=1)
+    )

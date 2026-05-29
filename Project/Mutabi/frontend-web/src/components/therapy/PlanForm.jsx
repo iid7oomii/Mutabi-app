@@ -1,5 +1,6 @@
 import Select from '../ui/Select'
 import Label from '../ui/Label'
+import { ChevronDownIcon } from '../Icons'
 
 const STATUS_OPTS = ['active', 'completed', 'cancelled']
 
@@ -83,7 +84,9 @@ export default function PlanForm({ form, setForm, patients, doctors, isAdmin }) 
                   </option>
                 ))}
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <ChevronDownIcon className="w-3 h-3" />
+              </span>
             </div>
           </div>
         )}

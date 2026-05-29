@@ -4,10 +4,10 @@ import { Ionicons } from '@expo/vector-icons'
 const ORANGE = '#FF7A00'
 
 const TABS = [
-  { key: 'Home',     label: 'Home',     icon: 'home-outline',      activeIcon: 'home' },
-  { key: 'Therapy',  label: 'Therapy',  icon: 'medical-outline',   activeIcon: 'medical' },
-  { key: 'Progress', label: 'Progress', icon: 'bar-chart-outline', activeIcon: 'bar-chart' },
-  { key: 'Profile',  label: 'Profile',  icon: 'person-outline',    activeIcon: 'person' },
+  { key: 'Home',     label: 'الرئيسية', icon: 'home-outline',      activeIcon: 'home' },
+  { key: 'Therapy',  label: 'العلاج',   icon: 'medical-outline',   activeIcon: 'medical' },
+  { key: 'Progress', label: 'التقدم',   icon: 'bar-chart-outline', activeIcon: 'bar-chart' },
+  { key: 'Profile',  label: 'الملف',    icon: 'person-outline',    activeIcon: 'person' },
 ]
 
 export default function BottomTabBar({ active, onTabPress }) {

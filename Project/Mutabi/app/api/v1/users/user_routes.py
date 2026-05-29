@@ -2,6 +2,13 @@ from flask import Blueprint, request, jsonify, g
 from app.facade.user_facade import UserFacade
 from app.repositories.user_repsitories import UserRepositories
 from app.api.v1.middleware.role_required import role_required
+from app import db
+from app.models.Children import Children
+from app.models.Appointments import Appointments
+from app.services.children_service import ChildrenService
+from app.repositories.children_repository import ChildrenRepository
+from app.repositories.therapyplansrepository import TherapyPlansRepository
+
 
 user_bp = Blueprint("users", __name__, url_prefix="/users")
 
@@ -175,15 +182,28 @@ def delete_user(user_id):
         description: المستخدم غير موجود
     """
     try:
-        deleted = UserRepositories.delete(user_id)
-        if not deleted:
+        user = UserRepositories.get_by_id(user_id)
+        if not user:
             return jsonify({"error": "User not found"}), 404
+
+        children = db.session.query(Children).filter(
+            (Children.parent_id == user_id) | (Children.doctor_id == user_id)
+        ).all()
+        for child in children:
+            ChildrenService._cascade_delete_child(str(child.id))
+            db.session.delete(child)
+
+        db.session.query(Appointments).filter_by(doctor_id=user_id).delete(synchronize_session=False)
+
+        db.session.delete(user)
+        db.session.commit()
         return jsonify({"message": "User deleted successfully"}), 200
     except Exception as e:
+        db.session.rollback()
         return jsonify({"error": str(e)}), 400
     
 @user_bp.route("/me", methods=["PUT"])
-@role_required("Admin", "Doctor")
+@role_required("Admin", "Doctor", "Parent")
 def update_me():
     """
     Update My Profile
@@ -236,9 +256,6 @@ def update_me():
 @role_required("Admin")
 def get_doctor_patients(user_id):
     try:
-        from app.repositories.children_repository import ChildrenRepository
-        from app.repositories.therapyplansrepository import TherapyPlansRepository
-        from app.repositories.user_repsitories import UserRepositories
 
         children = ChildrenRepository.get_by_doctor(user_id)
         result = []

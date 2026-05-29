@@ -423,20 +423,13 @@ def reset_password():
 @role_required("Doctor", "Parent")
 def set_password():
     try:
-        token = request.cookies.get('token')
-        if not token:
-            return jsonify({"error": "Unauthorized"}), 401
-            
-        claims = decode_token(token)
-        user_id = claims["sub"]
+        user_id = g.jwt_claims["sub"]
         data = request.get_json()
         result = AuthFacade.set_password(user_id, data["tempPassword"], data["newPassword"])
-
         return jsonify(result), 200
-        
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "Unauthorized"}), 401
     
 
@@ -463,6 +456,33 @@ def me():
     except Exception:
         return jsonify({"error": "Unauthorized"}), 401
     
+
+@auth_bp.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    try:
+        data = request.get_json()
+        email = data.get("email", "").strip()
+        if not email:
+            return jsonify({"error": "البريد الإلكتروني مطلوب"}), 400
+        result = AuthFacade.forgot_password(email)
+        return jsonify(result), 200
+    except Exception:
+        return jsonify({"message": "إذا كان البريد الإلكتروني مسجلاً، سيصلك رابط إعادة التعيين قريباً"}), 200
+
+
+@auth_bp.route("/reset-password-confirm", methods=["POST"])
+def reset_password_confirm():
+    try:
+        data = request.get_json()
+        token = data.get("token", "").strip()
+        new_password = data.get("new_password", "")
+        if not token or not new_password:
+            return jsonify({"error": "البيانات ناقصة"}), 400
+        result = AuthFacade.reset_password_by_token(token, new_password)
+        return jsonify(result), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():

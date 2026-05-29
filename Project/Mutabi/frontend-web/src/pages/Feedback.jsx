@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { ChevronDownIcon } from '../components/Icons'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -27,9 +28,21 @@ const STATUS_ICONS = {
 }
 
 const SENTIMENT_ICONS = {
-  completed: '😊',
-  skipped: '😞',
-  partially_completed: '😐',
+  completed: (
+    <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  skipped: (
+    <svg className="w-5 h-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  partially_completed: (
+    <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
 }
 
 function formatDateTime(dateStr) {
@@ -127,7 +140,9 @@ export default function Feedback() {
                 <option value={365}>Last 12 Months</option>
                 <option value={0}>All Time</option>
               </select>
-              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">▾</span>
+              <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <ChevronDownIcon className="w-3 h-3" />
+              </span>
             </div>
           </div>
 
@@ -142,7 +157,7 @@ export default function Feedback() {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-5 items-start">
-              <div className="space-y-5">
+              <div className="flex flex-col gap-5">
                 {left.map(f => (
                   <FeedbackCard
                     key={f.id}
@@ -158,7 +173,7 @@ export default function Feedback() {
                   />
                 ))}
               </div>
-              <div className="space-y-5">
+              <div className="flex flex-col gap-5">
                 {right.map(f => (
                   <FeedbackCard
                     key={f.id}
@@ -191,58 +206,64 @@ function FeedbackCard({ f, highlightId, replyingTo, replyText, sendingReply, set
 
   return (
     <div
-      id={`feedback-${f.id}`}
-      className={`bg-white rounded-2xl border shadow-sm p-5 transition ${
-        isHighlighted ? 'border-blue-400 shadow-blue-100' : 'border-gray-100'
-      }`}
-    >
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
-            style={{ background: color }}>
-            {initials}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-800">{f.parent_name}</p>
-            <p className="text-xs text-gray-400">
-              {f.parent_relationship ? f.parent_relationship.charAt(0).toUpperCase() + f.parent_relationship.slice(1) : 'Parent'} of {f.child_name}
-            </p>
-          </div>
+			id={`feedback-${f.id}`}
+			className={`bg-white rounded-2xl border shadow-sm p-5 transition h-[620px] flex flex-col ${
+				isHighlighted ? 'border-blue-400 shadow-blue-100' : 'border-gray-100'
+			}`}
+		>
+    {/* Header */}
+    <div className="flex items-start justify-between mb-4">
+    <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+        style={{ background: color }}>
+        {initials}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-400">{formatDateTime(f.feedback_date)}</span>
-          <span className="text-lg">{SENTIMENT_ICONS[f.completion_status] || '😐'}</span>
+        <div>
+        <p className="text-sm font-semibold text-gray-800">{f.parent_name}</p>
+        <p className="text-xs text-gray-400">
+            {f.parent_relationship ? f.parent_relationship.charAt(0).toUpperCase() + f.parent_relationship.slice(1) : 'Parent'} of {f.child_name}
+        </p>
         </div>
-      </div>
+    </div>
+    <div className="flex items-center gap-2">
+        <span className="text-xs text-gray-400">{formatDateTime(f.feedback_date)}</span>
+        {SENTIMENT_ICONS[f.completion_status] || (
+        <svg className="w-5 h-5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h8M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        )}
+    </div>
+    </div>
 
-      {/* Session Activity */}
-      <div className="bg-gray-50 rounded-xl p-3 mb-4">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Session Activity</p>
-        <div className="flex items-center gap-2">
-          {STATUS_ICONS[f.completion_status]}
-          <span className="text-sm font-medium text-gray-700">{f.exercise_title}</span>
-          {f.completion_status === 'skipped' && (
-            <span className="px-2 py-0.5 bg-red-100 text-red-500 text-xs font-semibold rounded-full">SKIPPED</span>
-          )}
-          {f.completion_status === 'partially_completed' && (
-            <span className="px-2 py-0.5 bg-yellow-100 text-yellow-600 text-xs font-semibold rounded-full">PARTIAL</span>
-          )}
-        </div>
-      </div>
+    {/* Session Activity */}
+    <div className="bg-gray-50 rounded-xl p-3 mb-4">
+    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Session Activity</p>
+    <div className="flex items-center gap-2">
+        {STATUS_ICONS[f.completion_status]}
+        <span className="text-sm font-medium text-gray-700">{f.exercise_title}</span>
+        {f.completion_status === 'skipped' && (
+        <span className="px-2 py-0.5 bg-red-100 text-red-500 text-xs font-semibold rounded-full">SKIPPED</span>
+        )}
+        {f.completion_status === 'partially_completed' && (
+        <span className="px-2 py-0.5 bg-yellow-100 text-yellow-600 text-xs font-semibold rounded-full">PARTIAL</span>
+        )}
+    </div>
+    </div>
 
       {/* Parent Notes */}
-      {f.parent_notes && (
+    <div>
+    {f.parent_notes && (
         <p className="text-sm text-gray-600 leading-relaxed mb-4 italic">
-          "{f.parent_notes}"
+        "{f.parent_notes}"
         </p>
-      )}
+    )}
+    </div>
 
       {/* Media */}
       {f.parent_media_url && (
         <div className="mb-4">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Media Submission</p>
-          <div className="rounded-xl overflow-hidden bg-gray-100 h-32">
+          <div className="rounded-xl overflow-hidden bg-gray-100 h-64">
             {f.parent_media_url.match(/\.(mp4|mov|webm)$/i) ? (
               <video src={f.parent_media_url} className="w-full h-full object-cover" controls />
             ) : f.parent_media_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
@@ -291,23 +312,23 @@ function FeedbackCard({ f, highlightId, replyingTo, replyText, sendingReply, set
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-4 pt-3 border-t border-gray-100">
-        <button
-          onClick={() => { setReplyingTo(f.id); setReplyText(f.doctor_reply || '') }}
-          className="text-sm font-medium hover:underline transition"
-          style={{ color: '#0F4C81' }}
-        >
-          {f.doctor_reply ? 'Edit Reply' : 'Reply'}
-        </button>
-        <button
-          onClick={() => navigate(`/patients/${f.child_id}`)}
-          className="text-sm font-medium hover:underline transition"
-          style={{ color: '#0F4C81' }}
-        >
-          View Patient File
-        </button>
-      </div>
+			<div className="flex items-center justify-end gap-4 pt-3 border-t border-gray-100 mt-auto">
+			<button
+					onClick={() => { setReplyingTo(f.id); setReplyText(f.doctor_reply || '') }}
+					className="text-sm font-medium hover:underline transition"
+					style={{ color: '#0F4C81' }}
+			>
+					{f.doctor_reply ? 'Edit Reply' : 'Reply'}
+			</button>
+			<button
+					onClick={() => navigate(`/patients/${f.child_id}`)}
+					className="text-sm font-medium hover:underline transition"
+					style={{ color: '#0F4C81' }}
+			>
+					View Patient File
+			</button>
+			</div>
 
-    </div>
+			</div>
   )
 }

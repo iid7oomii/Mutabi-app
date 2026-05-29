@@ -1,7 +1,7 @@
 from app.repositories.plan_exercises_repository import PlanExercisesRepository
 from app.repositories.therapyplansrepository import TherapyPlansRepository
 from app.repositories.exercises_repository import ExercisesRepository
-
+from typing import List
 
 class PlanExercisesService:
 
@@ -66,3 +66,4 @@ class PlanExercisesService:
         if not deleted:
             raise ValueError("Plan exercise not found")
         return {"message": "Plan exercise deleted successfully"}
+    
