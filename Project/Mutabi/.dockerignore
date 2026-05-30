@@ -5,3 +5,9 @@ frontend-web/node_modules
 frontend-mobile/node_modules
 .git
 *.log
+frontend-mobile/
+frontend-web/
+.venv/
+__pycache__/
+docker-compose.yml
+nginx.conf
