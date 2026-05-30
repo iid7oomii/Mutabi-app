@@ -6,7 +6,7 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import Header from '../components/Header'
-import { apiGet, getLocalSessions, todayString } from '../utils/api'
+import { apiGet, getLocalSessions, todayString, localDayName } from '../utils/api'
 import { useFocusEffect } from '@react-navigation/native'
 import { useCallback } from 'react'
 
@@ -58,7 +58,7 @@ export default function TherapyScreen({ onTabPress }) {
 
 	const fetchData = async () => {
 		try {
-			const res = await apiGet('/dashboard/parent')
+			const res = await apiGet(`/dashboard/parent?day=${localDayName()}`)
 			const json = await res.json()
 			if (!res.ok) { setError(json.error || 'خطأ'); return }
 			setData(json)
@@ -206,11 +206,11 @@ export default function TherapyScreen({ onTabPress }) {
 								key={ex.id}
 								style={styles.cardBlue}
 								activeOpacity={0.8}
-								onPress={() => navigation.navigate('ExerciseDetail', { exercise: ex })}
+								onPress={() => navigation.navigate('ExerciseDetail', { exercise: ex, isCompleted: status === 'completed' })}
 							>
 								<View style={styles.cardTop}>
 									<View style={[styles.iconWrap, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-										<Ionicons name={ICONS[i % ICONS.length]} size={22} color="#fff" />
+										<Ionicons name={ex.exercise_icon || ICONS[i % ICONS.length]} size={22} color="#fff" />
 									</View>
 									<StatusBadge status={status} />
 								</View>
@@ -225,10 +225,10 @@ export default function TherapyScreen({ onTabPress }) {
 									) : <View />}
 									<TouchableOpacity
 												style={[styles.actionBtn, status === 'completed' && styles.actionBtnGrey]}
-												onPress={() => {
-													if (status === 'completed') return
-													navigation.navigate('ExerciseDetail', { exercise: ex })
-												}}
+												onPress={() => navigation.navigate('ExerciseDetail', {
+													exercise: ex,
+													isCompleted: status === 'completed',
+												})}
 											>
 										<Text style={[styles.actionText, status === 'completed' && { color: '#555' }]}>
 											{getActionLabel(status)}

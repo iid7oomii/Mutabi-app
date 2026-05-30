@@ -1,18 +1,20 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const ORANGE = '#FF7A00'
 
 const TABS = [
   { key: 'Home',     label: 'الرئيسية', icon: 'home-outline',      activeIcon: 'home' },
-  { key: 'Therapy',  label: 'العلاج',   icon: 'medical-outline',   activeIcon: 'medical' },
+  { key: 'Therapy',  label: 'التمارين', icon: 'medical-outline',   activeIcon: 'medical' },
   { key: 'Progress', label: 'التقدم',   icon: 'bar-chart-outline', activeIcon: 'bar-chart' },
   { key: 'Profile',  label: 'الملف',    icon: 'person-outline',    activeIcon: 'person' },
 ]
 
 export default function BottomTabBar({ active, onTabPress }) {
+  const insets = useSafeAreaInsets()
   return (
-    <View style={styles.bar}>
+    <View style={[styles.bar, { paddingBottom: insets.bottom + 6 }]}>
       {TABS.map(tab => {
         const isActive = active === tab.key
         return (

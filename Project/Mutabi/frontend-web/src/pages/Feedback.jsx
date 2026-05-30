@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { API_BASE_URL } from '../config';
 import { ChevronDownIcon } from '../components/Icons'
 
 const AVATAR_COLORS = [
@@ -65,7 +66,7 @@ export default function Feedback() {
   const [dateFilter, setDateFilter] = useState(0)
 
   const load = () => {
-    fetch('/api/v1/feedback/doctor/all', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/feedback/doctor/all`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setFeedbacks(Array.isArray(data) ? data : []))
       .catch(console.error)
@@ -88,7 +89,7 @@ export default function Feedback() {
     if (!replyText.trim()) return
     setSendingReply(true)
     try {
-      await fetch(`/api/v1/feedback/${feedbackId}/reply`, {
+      await fetch(`${API_BASE_URL}/api/v1/feedback/${feedbackId}/reply`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },

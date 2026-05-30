@@ -1,82 +1,98 @@
+import { useState, useCallback } from 'react'
 import {
   View, Text, FlatList, TouchableOpacity,
-  StyleSheet, SafeAreaView,
+  StyleSheet, ActivityIndicator,
 } from 'react-native'
-import { useNavigation } from '@react-navigation/native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
+import { apiGet, apiPut } from '../utils/api'
 
 const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
 
-const MOCK_NOTIFICATIONS = [
-  {
-    id: '1',
-    type: 'doctor',
-    title: 'د. سارة جنكينز',
-    body: 'لقد راجعت سجل تقدمك الأخير. دعنا نناقش استراتيجيات التعامل الجديدة.',
-    time: '10:42 ص',
-    isNew: true,
-    icon: 'person',
-    iconBg: '#FFF3E8',
-    iconColor: ORANGE,
-  },
-  {
-    id: '2',
-    type: 'appointment',
-    title: 'موعد قادم',
-    body: 'تذكير: لديك جلسة علاجية مجدولة مع د. سارة جنكينز...',
-    time: 'أمس',
-    isNew: true,
-    icon: 'calendar-outline',
-    iconBg: '#EEF3FA',
-    iconColor: BLUE,
-  },
-  {
-    id: '3',
-    type: 'milestone',
-    title: 'تم بلوغ إنجاز!',
-    body: 'تهانينا على إتمام 7 أيام متتالية من اليقظة الذهنية...',
-    time: '24 أكت',
-    isNew: false,
-    icon: 'trophy-outline',
-    iconBg: '#E8F5E9',
-    iconColor: '#2E7D32',
-  },
-  {
-    id: '4',
-    type: 'system',
-    title: 'تحديث النظام',
-    body: 'لقد حدّثنا سياسة الخصوصية وأضفنا ميزات جديدة إلى التقدم...',
-    time: '20 أكت',
-    isNew: false,
-    icon: 'shield-checkmark-outline',
-    iconBg: '#F5F5F5',
-    iconColor: '#888',
-  },
-]
+function iconForType(type) {
+  switch (type) {
+    case 'new_plan':       return { name: 'document-text-outline', bg: '#EEF3FA', color: BLUE }
+    case 'feedback_reply': return { name: 'person',                bg: '#FFF3E8', color: ORANGE }
+    case 'feedback_report':return { name: 'clipboard-outline',     bg: '#E8F5E9', color: '#2E7D32' }
+    default:               return { name: 'notifications-outline', bg: '#F5F5F5', color: '#888' }
+  }
+}
+
+function formatDate(iso) {
+  if (!iso) return ''
+  const d = new Date(iso)
+  return d.toLocaleDateString('ar-SA', { month: 'short', day: 'numeric' })
+}
 
 export default function NotificationsScreen() {
-  const navigation = useNavigation()
+  const navigation                          = useNavigation()
+  const [notifications, setNotifications]   = useState([])
+  const [loading, setLoading]               = useState(true)
+  const [markingAll, setMarkingAll]         = useState(false)
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={[styles.item, item.isNew && styles.itemNew]} activeOpacity={0.8}>
-      <View style={[styles.iconWrap, { backgroundColor: item.iconBg }]}>
-        <Ionicons name={item.icon} size={20} color={item.iconColor} />
-      </View>
-      <View style={styles.itemContent}>
-        <View style={styles.itemHeader}>
-          <Text style={styles.itemTitle}>{item.title}</Text>
-          {item.isNew && (
-            <View style={styles.newBadge}>
-              <Text style={styles.newBadgeText}>جديد</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.itemBody} numberOfLines={2}>{item.body}</Text>
-        <Text style={styles.itemTime}>{item.time}</Text>
-      </View>
-    </TouchableOpacity>
+  useFocusEffect(
+    useCallback(() => {
+      let active = true
+      async function load() {
+        setLoading(true)
+        try {
+          const res  = await apiGet('/notifications/')
+          const data = await res.json()
+          if (active && res.ok) setNotifications(Array.isArray(data) ? data : [])
+        } catch {}
+        finally { if (active) setLoading(false) }
+      }
+      load()
+      return () => { active = false }
+    }, [])
   )
+
+  const markOne = async (id) => {
+    setNotifications(prev =>
+      prev.map(n => n.id === id ? { ...n, is_read: true } : n)
+    )
+    try { await apiPut(`/notifications/${id}/read`, {}) } catch {}
+  }
+
+  const markAll = async () => {
+    setMarkingAll(true)
+    try {
+      await apiPut('/notifications/read-all', {})
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    } catch {}
+    setMarkingAll(false)
+  }
+
+  const unreadCount = notifications.filter(n => !n.is_read).length
+
+  const renderItem = ({ item }) => {
+    const ic = iconForType(item.type)
+    return (
+      <TouchableOpacity
+        style={[styles.item, !item.is_read && styles.itemNew]}
+        activeOpacity={0.8}
+        onPress={() => markOne(item.id)}
+      >
+        <View style={[styles.iconWrap, { backgroundColor: ic.bg }]}>
+          <Ionicons name={ic.name} size={20} color={ic.color} />
+        </View>
+        <View style={styles.itemContent}>
+          <View style={styles.itemHeader}>
+            <Text style={styles.itemTitle}>{item.title}</Text>
+            {!item.is_read && (
+              <View style={styles.newBadge}>
+                <Text style={styles.newBadgeText}>جديد</Text>
+              </View>
+            )}
+          </View>
+          <Text style={styles.itemBody} numberOfLines={2}>{item.body}</Text>
+          <Text style={styles.itemTime}>{formatDate(item.created_at)}</Text>
+        </View>
+      </TouchableOpacity>
+    )
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -85,60 +101,68 @@ export default function NotificationsScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-forward" size={22} color="#1a1a2e" />
         </TouchableOpacity>
-        <View style={[styles.headerLogo, { backgroundColor: '#EEF3FA' }]}>
-          <Ionicons name="person" size={14} color={BLUE} />
-        </View>
-        <Text style={styles.clinicName}>اسم العيادة</Text>
+        <Text style={styles.headerTitle}>الإشعارات</Text>
         <Ionicons name="notifications" size={22} color={ORANGE} style={{ marginLeft: 'auto' }} />
       </View>
 
       {/* Subheader */}
       <View style={styles.subHeader}>
-        <View>
-          <Text style={styles.pageTitle}>الإشعارات</Text>
-          <Text style={styles.pageSubtitle}>
-            لديك {MOCK_NOTIFICATIONS.filter(n => n.isNew).length} رسائل غير مقروءة.
-          </Text>
-        </View>
-        <TouchableOpacity>
-          <Text style={styles.markAll}>تحديد الكل كمقروء</Text>
-        </TouchableOpacity>
+        <Text style={styles.pageSubtitle}>
+          {unreadCount > 0 ? `لديك ${unreadCount} رسائل غير مقروءة` : 'لا توجد رسائل غير مقروءة'}
+        </Text>
+        {unreadCount > 0 && (
+          <TouchableOpacity onPress={markAll} disabled={markingAll}>
+            <Text style={styles.markAll}>
+              {markingAll ? '...' : 'تحديد الكل كمقروء'}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      <FlatList
-        data={MOCK_NOTIFICATIONS}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading ? (
+        <ActivityIndicator color={BLUE} style={{ marginTop: 40 }} />
+      ) : notifications.length === 0 ? (
+        <View style={styles.empty}>
+          <Ionicons name="notifications-off-outline" size={48} color="#ccc" />
+          <Text style={styles.emptyText}>لا توجد إشعارات</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={item => String(item.id)}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </SafeAreaView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8f9fb' },
+  container:    { flex: 1, backgroundColor: '#f8f9fb' },
 
-  header:      { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0', gap: 10 },
-  backBtn:     { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
-  headerLogo:  { width: 32, height: 32, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
-  clinicName:  { fontSize: 15, fontWeight: '600', color: '#1a1a2e' },
+  header:       { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0', gap: 10 },
+  backBtn:      { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  headerTitle:  { fontSize: 15, fontWeight: '600', color: '#1a1a2e' },
 
-  subHeader:   { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5' },
-  pageTitle:   { fontSize: 22, fontWeight: '700', color: '#1a1a2e' },
-  pageSubtitle:{ fontSize: 13, color: '#888', marginTop: 2 },
-  markAll:     { fontSize: 13, color: ORANGE, fontWeight: '600', paddingTop: 6 },
+  subHeader:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5' },
+  pageSubtitle: { fontSize: 13, color: '#888' },
+  markAll:      { fontSize: 13, color: ORANGE, fontWeight: '600' },
 
-  list: { padding: 16, gap: 10 },
+  list:         { padding: 16, gap: 10 },
 
-  item:        { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 14, padding: 14, gap: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
-  itemNew:     { borderLeftWidth: 3, borderLeftColor: ORANGE },
-  iconWrap:    { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  itemContent: { flex: 1, gap: 4 },
-  itemHeader:  { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  itemTitle:   { fontSize: 14, fontWeight: '700', color: '#1a1a2e', flex: 1 },
-  newBadge:    { backgroundColor: '#FFF3E8', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
-  newBadgeText:{ fontSize: 11, color: ORANGE, fontWeight: '700' },
-  itemBody:    { fontSize: 13, color: '#666', lineHeight: 18 },
-  itemTime:    { fontSize: 11, color: '#aaa', marginTop: 2 },
+  item:         { flexDirection: 'row', backgroundColor: '#fff', borderRadius: 14, padding: 14, gap: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  itemNew:      { borderLeftWidth: 3, borderLeftColor: ORANGE },
+  iconWrap:     { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  itemContent:  { flex: 1, gap: 4 },
+  itemHeader:   { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  itemTitle:    { fontSize: 14, fontWeight: '700', color: '#1a1a2e', flex: 1 },
+  newBadge:     { backgroundColor: '#FFF3E8', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10 },
+  newBadgeText: { fontSize: 11, color: ORANGE, fontWeight: '700' },
+  itemBody:     { fontSize: 13, color: '#666', lineHeight: 18 },
+  itemTime:     { fontSize: 11, color: '#aaa', marginTop: 2 },
+
+  empty:        { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
+  emptyText:    { fontSize: 14, color: '#aaa' },
 })

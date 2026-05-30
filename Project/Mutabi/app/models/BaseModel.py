@@ -1,5 +1,5 @@
 from app import db
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Boolean, DateTime, func
@@ -28,7 +28,7 @@ class BaseModel(db.Model):
             if column.name in exclude:
                 continue
             value = getattr(self, column.name)
-            if isinstance(value, datetime):
+            if isinstance(value, (datetime, date)):
                 value = value.isoformat()
             elif hasattr(value, 'value'):
                 value = value.value

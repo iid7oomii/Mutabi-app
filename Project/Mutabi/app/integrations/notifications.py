@@ -1,93 +1,86 @@
 """
-FCMNotificationClient
-=====================
-Wraps the Firebase Cloud Messaging (FCM) legacy HTTP API to send push
-notifications to the Mutabi React Native mobile app.
-
-Responsibilities
-----------------
-- Deliver real-time push notifications to individual devices using their
-  FCM registration token.
-- Provide two high-level helpers that encode the exact notification events
-  defined in the system requirements:
-    * notify_parent_new_plan  — triggered when a doctor creates a therapy plan.
-    * notify_doctor_feedback  — triggered when a parent submits exercise feedback.
-
-Environment variables required
-------------------------------
-FCM_SERVER_KEY — Server key obtained from the Firebase project console.
-
-API reference
--------------
-Legacy FCM endpoint: POST https://fcm.googleapis.com/fcm/send
-Authorization header: key=<FCM_SERVER_KEY>
+ExpoPushClient
+==============
+Sends push notifications via Expo's Push API (https://exp.host/--/api/v2/push/send).
+Works with both Expo Go (ExponentPushToken) and standalone builds.
 """
-
-import os
 
 import requests
 
 
+EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send"
+
+
 class FCMNotificationClient:
-    """Firebase Cloud Messaging client for sending push notifications."""
+    """Push notification client — uses Expo Push API (works with Expo Go and production builds)."""
 
-    _URL = "https://fcm.googleapis.com/fcm/send"
+    def send(self, device_token: str, title: str, body: str, data: dict = None) -> bool:
+        if not device_token:
+            return False
+        try:
+            payload = {
+                "to": device_token,
+                "title": title,
+                "body": body,
+                "sound": "default",
+                "data": data or {},
+            }
+            res = requests.post(
+                EXPO_PUSH_URL,
+                json=payload,
+                headers={
+                    "Accept": "application/json",
+                    "Accept-Encoding": "gzip, deflate",
+                    "Content-Type": "application/json",
+                },
+                timeout=10,
+            )
+            result = res.json()
+            status = result.get("data", {}).get("status") if isinstance(result.get("data"), dict) else None
+            if status == "error":
+                print(f"[Expo Push] Error: {result['data'].get('message')}")
+                return False
+            return res.ok
+        except Exception as e:
+            print(f"[Expo Push] Failed to send notification: {e}")
+            return False
 
-    def __init__(self):
-        self._headers = {
-            "Authorization": f"key={os.getenv('FCM_SERVER_KEY')}",
-            "Content-Type": "application/json",
-        }
-
-    def send(self, device_token: str, title: str, body: str) -> None:
-        """Send a push notification to a single device.
-
-        This is the low-level method.  Prefer the named helpers below when
-        the intent is one of the standard application events.
-
-        Args:
-            device_token: FCM registration token of the target device.
-            title:        Notification title displayed on the device.
-            body:         Notification body text displayed on the device.
-
-        Raises:
-            requests.HTTPError: If FCM returns a non-2xx response.
-        """
-        payload = {
-            "to": device_token,
-            "notification": {"title": title, "body": body},
-        }
-        response = requests.post(self._URL, json=payload, headers=self._headers, timeout=10)
-        response.raise_for_status()
-
-    def notify_parent_new_plan(self, device_token: str, child_name: str) -> None:
-        """Notify a parent that the doctor has assigned a new therapy plan.
-
-        Called by the business logic layer immediately after a therapy plan
-        is saved to the database.
-
-        Args:
-            device_token: FCM token of the parent's mobile device.
-            child_name:   Name of the child the plan belongs to.
-        """
-        self.send(
+    def notify_parent_new_plan(self, device_token: str, child_name: str) -> bool:
+        return self.send(
             device_token,
-            title="New Therapy Plan",
-            body=f"A new therapy plan has been assigned for {child_name}.",
+            title="خطة علاجية جديدة",
+            body=f"تم تعيين خطة علاجية جديدة لـ {child_name}.",
+            data={"type": "new_plan"},
         )
 
-    def notify_doctor_feedback(self, device_token: str, child_name: str) -> None:
-        """Notify a doctor that a parent has submitted exercise feedback.
-
-        Called by the business logic layer immediately after an
-        ExerciseFeedback record is saved to the database.
-
-        Args:
-            device_token: FCM token of the doctor's device.
-            child_name:   Name of the child whose feedback was submitted.
-        """
-        self.send(
+    def notify_parent_feedback_reply(self, device_token: str, doctor_name: str) -> bool:
+        return self.send(
             device_token,
-            title="New Exercise Feedback",
-            body=f"The parent of {child_name} has submitted a new exercise report.",
+            title="رد الدكتور",
+            body=f"د. {doctor_name} رد على تقريرك.",
+            data={"type": "feedback_reply"},
+        )
+
+    def notify_doctor_feedback(self, device_token: str, child_name: str) -> bool:
+        return self.send(
+            device_token,
+            title="تقرير تمارين جديد",
+            body=f"ولي أمر {child_name} أرسل تقرير جلسة جديد.",
+            data={"type": "feedback_report"},
+        )
+
+    def notify_parent_new_note(self, device_token: str, doctor_name: str, child_name: str) -> bool:
+        return self.send(
+            device_token,
+            title="ملاحظة جديدة من الدكتور",
+            body=f"د. {doctor_name} أضاف ملاحظة جديدة لـ {child_name}.",
+            data={"type": "doctor_note"},
+        )
+
+    def notify_parent_new_appointment(self, device_token: str, appt_str: str, child_name: str) -> bool:
+        return self.send(
+            device_token,
+            title="موعد جديد",
+            body=f"تم تحديد موعد جديد لـ {child_name} بتاريخ {appt_str}.",
+            data={"type": "appointment"},
         )

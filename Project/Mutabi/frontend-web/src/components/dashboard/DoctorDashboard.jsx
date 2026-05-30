@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
+import { API_BASE_URL } from '../../config';
 import { WarningIcon, UsersIcon, XCircleIcon, UserIcon, ArrowUpIcon, CheckIcon, CloseIcon } from '../Icons'
 
 export default function DoctorDashboard() {
@@ -12,7 +13,7 @@ export default function DoctorDashboard() {
   useEffect(() => {
     const fetchDashboard = async () => {
       try {
-        const res = await fetch('/api/v1/dashboard/doctor', {
+        const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/doctor`, {
           credentials: 'include',
         })
         const json = await res.json()

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import logo from '../assets/logo-mark.svg';
+import { API_BASE_URL } from '../config';
 import userlogo from '../assets/logo-user.png';
 import passlogo from '../assets/Passlogo.png';
 
@@ -53,7 +54,7 @@ export default function Login() {
   setError('')
 
   try {
-    const res = await fetch('/api/v1/auth/login', {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -67,10 +68,13 @@ export default function Login() {
       return
     }
 
-
+    if (data.role === 'parent') {
+      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, { method: 'POST', credentials: 'include' })
+      setError('حساب ولي الأمر متاح فقط عبر تطبيق الجوال')
+      return
+    }
 
     await fetchUser()
-
 
   } catch {
     setError('تعذر الاتصال بالخادم')
@@ -157,6 +161,11 @@ export default function Login() {
             </button>
 
           </form>
+        <div className="flex justify-end mb-2">
+        <a href="/forgot-password" className="text-sm hover:underline" style={{ color: '#0F4C81' }}>
+            نسيت كلمة المرور؟
+        </a>
+        </div>
 
           <p className="text-center text-sm text-gray-400 mt-6">
             ليس لديك حساب؟{' '}

@@ -24,6 +24,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2b947be6-1ee6-4e7e-bcf5-a00864f85d93"
+      }
+    },
+    "owner": "kmsao"
   }
 }

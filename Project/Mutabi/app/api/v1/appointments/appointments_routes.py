@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify, g
+from datetime import datetime
 from app.services.appointments_service import AppointmentsService
 from app.api.v1.middleware.role_required import role_required
+from app.repositories.children_repository import ChildrenRepository
+from app.repositories.notification_repository import NotificationRepository
+from app.integrations.notifications import FCMNotificationClient
 
 appointments_bp = Blueprint("appointments", __name__, url_prefix="/appointments")
 
@@ -47,6 +51,38 @@ def create_appointment():
         claims = g.jwt_claims
         data["doctor_id"] = claims["sub"]
         result = AppointmentsService.create(data)
+
+        try:
+            child = ChildrenRepository.get_by_id(data["child_id"])
+            if child:
+                parent = child.parent
+                child_name = child.first_name
+                appt_raw = data.get("appointment", "")
+                try:
+                    for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M', '%Y-%m-%d'):
+                        try:
+                            dt = datetime.strptime(appt_raw, fmt)
+                            break
+                        except ValueError:
+                            continue
+                    appt_str = dt.strftime('%-d/%-m/%Y الساعة %I:%M %p') if dt else appt_raw
+                except Exception:
+                    appt_str = appt_raw
+
+                NotificationRepository.create(
+                    user_id=str(parent.id),
+                    title="موعد جديد",
+                    body=f"تم تحديد موعد جديد لـ {child_name} بتاريخ {appt_str}.",
+                    type="appointment",
+                )
+
+                if parent.device_token:
+                    FCMNotificationClient().notify_parent_new_appointment(
+                        parent.device_token, appt_str, child_name
+                    )
+        except Exception as notif_err:
+            print(f"[Notification] Failed: {notif_err}")
+
         return jsonify(result), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

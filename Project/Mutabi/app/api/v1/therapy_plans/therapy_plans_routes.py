@@ -1,7 +1,10 @@
-from flask import Blueprint, request, jsonify
 from flask import Blueprint, request, jsonify, g
 from app.services.therapy_plans_service import TherapyPlansService
 from app.api.v1.middleware.role_required import role_required
+from app.repositories.children_repository import ChildrenRepository
+from app.repositories.user_repsitories import UserRepositories
+from app.repositories.notification_repository import NotificationRepository
+from app.integrations.notifications import FCMNotificationClient
 
 therapy_plans_bp = Blueprint("therapy_plans", __name__, url_prefix="/therapy-plans")
 
@@ -51,6 +54,29 @@ def create_plan():
     try:
         data = request.get_json()
         result = TherapyPlansService.create(data)
+
+        try:
+            child_id = data.get("child_id")
+            if child_id:
+                child = ChildrenRepository.get_by_id(child_id)
+                if child and child.parent_id:
+                    parent = UserRepositories.get_by_id(str(child.parent_id))
+                    child_name = f"{child.first_name} {child.second_name}"
+
+                    NotificationRepository.create(
+                        user_id=str(parent.id),
+                        title="خطة علاجية جديدة",
+                        body=f"تم تعيين خطة علاجية جديدة لـ {child_name}.",
+                        type="new_plan",
+                    )
+
+                    if parent.device_token:
+                        FCMNotificationClient().notify_parent_new_plan(
+                            parent.device_token, child_name
+                        )
+        except Exception as notif_err:
+            print(f"[Notification] Failed: {notif_err}")
+
         return jsonify(result), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

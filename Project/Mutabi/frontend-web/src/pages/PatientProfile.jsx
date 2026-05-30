@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
 
 const AVATAR_COLORS = [
@@ -48,7 +49,7 @@ export default function PatientProfile() {
   const [showExercises, setShowExercises] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/v1/children/${id}`, { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/children/${id}`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => {
         if (data.error) throw new Error(data.error)
@@ -86,12 +87,12 @@ export default function PatientProfile() {
   const handleDeleteExercise = async (planExerciseId) => {
   if (!confirm('Delete this exercise from the plan?')) return
   try {
-    const res = await fetch(`/api/v1/plan-exercises/${planExerciseId}`, {
+    const res = await fetch(`${API_BASE_URL}/api/v1/plan-exercises/${planExerciseId}`, {
       method: 'DELETE',
       credentials: 'include',
     })
     if (res.ok) {
-      const updated = await fetch(`/api/v1/children/${id}`, { credentials: 'include' })
+      const updated = await fetch(`${API_BASE_URL}/api/v1/children/${id}`, { credentials: 'include' })
       const data = await updated.json()
       setPatient(data)
     }

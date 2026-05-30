@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { ChevronRightIcon } from '../components/Icons'
+import { API_BASE_URL } from '../config';
+import useAuthStore from '../store/authStore'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -39,16 +41,44 @@ function PlanBadge({ status }) {
 export default function DoctorProfile() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user: currentUser } = useAuthStore()
   const [doctor, setDoctor] = useState(null)
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(true)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const fileInputRef = useRef(null)
+  const isAdmin = currentUser?.role === 'admin'
+
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploadingAvatar(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch(`${API_BASE_URL}/api/v1/upload/avatar/${id}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd,
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setDoctor(prev => ({ ...prev, profile_picture_url: data.url }))
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setUploadingAvatar(false)
+      e.target.value = ''
+    }
+  }
 
   useEffect(() => {
     const load = async () => {
       try {
         const [dRes, pRes] = await Promise.all([
-          fetch(`/api/v1/users/${id}`, { credentials: 'include' }),
-          fetch(`/api/v1/users/${id}/patients`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/users/${id}`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/users/${id}/patients`, { credentials: 'include' }),
         ])
         const [dData, pData] = await Promise.all([dRes.json(), pRes.json()])
         setDoctor(dData)
@@ -103,9 +133,36 @@ export default function DoctorProfile() {
 
                     {/* Content */}
                     <div className="px-6 pb-6">
-                    <div className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold -mt-10 mb-4 border-4 border-white shadow-sm"
-                        style={{ background: color }}>
-                        {initials}
+                    <div className="relative w-20 h-20 -mt-10 mb-4">
+                      {doctor?.profile_picture_url ? (
+                        <img src={doctor.profile_picture_url} alt={fullName}
+                          className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm" />
+                      ) : (
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl font-bold border-4 border-white shadow-sm"
+                          style={{ background: color }}>
+                          {initials}
+                        </div>
+                      )}
+                      {isAdmin && (
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={uploadingAvatar}
+                          className="absolute bottom-0 right-0 w-7 h-7 rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm disabled:opacity-60"
+                          style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                        >
+                          {uploadingAvatar ? (
+                            <div className="w-3 h-3 rounded-full border border-white border-t-transparent animate-spin" />
+                          ) : (
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                          )}
+                        </button>
+                      )}
+                      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp"
+                        className="hidden" onChange={handleAvatarUpload} />
                     </div>
 
                     <h2 className="text-lg font-bold text-gray-800">Dr. {fullName}</h2>

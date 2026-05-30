@@ -87,6 +87,17 @@ class FeedbackRepository:
     
 
     @staticmethod
+    def get_all_by_child(child_id: str) -> List[ExercisesFeedback]:
+        return (
+            db.session.query(ExercisesFeedback)
+            .join(PlanExercises)
+            .join(TherapyPlans)
+            .filter(TherapyPlans.child_id == child_id)
+            .order_by(ExercisesFeedback.feedback_date.desc())
+            .all()
+        )
+
+    @staticmethod
     def get_by_date_and_child(child_id: str, date) -> List[ExercisesFeedback]:
         return (
             db.session.query(ExercisesFeedback)

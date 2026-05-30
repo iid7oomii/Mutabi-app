@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import String, Text, ForeignKey, Date
 import sqlalchemy
 from app.models.BaseModel import BaseModel
-from datetime import date
+from datetime import date, datetime
 from app.models.EnumStatus import EnumStatus
 
 if TYPE_CHECKING:
@@ -46,7 +46,6 @@ class TherapyPlans(BaseModel):
         if value is None:
             return value
         if isinstance(value, str):
-            from datetime import datetime
             value = datetime.strptime(value, '%Y-%m-%d').date()
         if value < date.today():
             raise ValueError("start_date must be today or in the future")
@@ -57,7 +56,6 @@ class TherapyPlans(BaseModel):
         if value is None:
             return value
         if isinstance(value, str):
-            from datetime import datetime
             value = datetime.strptime(value, '%Y-%m-%d').date()
         return value
 

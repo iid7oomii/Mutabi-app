@@ -11,7 +11,7 @@ export default function MainTabs({ navigation }) {
   const [activeTab, setActiveTab] = useState('Home')
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={[]}>
       <View style={styles.content}>
         {/* Render all tabs but show only the active one */}
         <View style={[styles.tab, activeTab === 'Home'     && styles.visible]}>

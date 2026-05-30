@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../store/authStore'
 import logo from '../assets/logo-mark.svg';
 import userlogo from '../assets/logo-user.png';
+import { API_BASE_URL } from '../config';
 import passlogo from '../assets/Passlogo.png';
 import { ChevronLeftIcon, ChevronRightIcon } from '../components/Icons'
 
@@ -130,7 +131,7 @@ export default function Signup() {
   setLoading(true);
 
   try {
-    const res = await fetch('/api/v1/auth/signup', {
+    const res = await fetch(`${API_BASE_URL}/api/v1/auth/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',

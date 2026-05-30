@@ -13,6 +13,10 @@ class Exercises(BaseModel):
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
     doctor_media_url: Mapped[Optional[str]] = mapped_column(String(255))
+    icon: Mapped[Optional[str]] = mapped_column(String(60))
+    difficulty: Mapped[Optional[str]] = mapped_column(String(20))
+    goal: Mapped[Optional[str]] = mapped_column(String(255))
+    steps_json: Mapped[Optional[str]] = mapped_column(Text)
 
     plan_exercises: Mapped[List['PlanExercises']] = relationship(back_populates='exercise')
 

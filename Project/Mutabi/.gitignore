@@ -27,3 +27,4 @@ logs/
 Thumbs.db
 uploads/
 media/
+firebase-credentials.json

@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, ActivityIndicator, Alert,
+  StyleSheet, ActivityIndicator, Alert, Image,
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Ionicons } from '@expo/vector-icons'
+import * as ImagePicker from 'expo-image-picker'
 import Header from '../components/Header'
 import { apiGet } from '../utils/api'
+import { API_BASE } from '../config'
 import { useFocusEffect } from '@react-navigation/native'
 import { useCallback } from 'react'
 
@@ -20,6 +22,8 @@ export default function ProfileScreen() {
   const [dashboard, setDashboard] = useState(null)
   const [loading, setLoading]     = useState(true)
   const [error, setError] = useState('')
+  const [profilePicUrl, setProfilePicUrl] = useState(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   useFocusEffect(
     useCallback(() => {
@@ -40,12 +44,55 @@ export default function ProfileScreen() {
             email: json.email,
         })
         setDashboard(json)
+        setProfilePicUrl(json.profile_picture_url || null)
         }
     } catch {
     } finally {
         setLoading(false)
     }
     }
+
+  const handleAvatarUpload = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') {
+      Alert.alert('الإذن مطلوب', 'يرجى السماح بالوصول إلى معرض الصور.')
+      return
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    })
+    if (result.canceled) return
+
+    const asset = result.assets[0]
+    setUploadingAvatar(true)
+    try {
+      const token = await AsyncStorage.getItem('token')
+      const fd = new FormData()
+      fd.append('file', {
+        uri: asset.uri,
+        name: 'avatar.jpg',
+        type: asset.mimeType || 'image/jpeg',
+      })
+      const res = await fetch(`${API_BASE}/api/v1/upload/avatar`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setProfilePicUrl(data.url)
+      } else {
+        Alert.alert('خطأ', 'فشل رفع الصورة.')
+      }
+    } catch {
+      Alert.alert('خطأ', 'تعذر الاتصال بالخادم.')
+    } finally {
+      setUploadingAvatar(false)
+    }
+  }
 
   const handleLogout = () => {
     Alert.alert(
@@ -93,18 +140,23 @@ export default function ProfileScreen() {
         <View style={styles.profileCard}>
           {/* Avatar */}
           <View style={styles.avatarWrap}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{initials}</Text>
-            </View>
+            {profilePicUrl ? (
+              <Image source={{ uri: profilePicUrl }} style={styles.avatarImage} />
+            ) : (
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
+            )}
             <TouchableOpacity
               style={styles.editAvatarBtn}
-              onPress={() => navigation.navigate('EditProfile', {
-                first_name:  user?.first_name  || '',
-                second_name: user?.second_name || '',
-                phone:       dashboard?.phone  || '',
-              })}
+              onPress={handleAvatarUpload}
+              disabled={uploadingAvatar}
             >
-              <Ionicons name="pencil" size={14} color="#fff" />
+              {uploadingAvatar ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Ionicons name="camera" size={14} color="#fff" />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -160,8 +212,9 @@ export default function ProfileScreen() {
         {/* Settings Section */}
         <Text style={styles.sectionTitle2}>الحساب</Text>
         {[
-          { icon: 'lock-closed-outline', label: 'تغيير كلمة المرور', color: '#555', action: () => navigation.navigate('ChangePassword') },
-          { icon: 'log-out-outline',     label: 'تسجيل الخروج',      color: '#dc2626', action: handleLogout },
+          { icon: 'person-outline',      label: 'تعديل الملف الشخصي', color: '#555', action: () => navigation.navigate('EditProfile', { first_name: user?.first_name || '', second_name: user?.second_name || '', phone: dashboard?.phone || '' }) },
+          { icon: 'lock-closed-outline', label: 'تغيير كلمة المرور',  color: '#555', action: () => navigation.navigate('ChangePassword') },
+          { icon: 'log-out-outline',     label: 'تسجيل الخروج',       color: '#dc2626', action: handleLogout },
         ].map(item => (
           <TouchableOpacity
             key={item.label}
@@ -169,13 +222,13 @@ export default function ProfileScreen() {
             onPress={item.action || (() => Alert.alert(item.label, 'قادم قريباً.'))}
             activeOpacity={0.7}
           >
-            <View style={[styles.settingsIcon, item.label === 'تسجيل الخروج' && styles.settingsIconRed]}>
+            <View style={[styles.settingsIcon, item.color === '#dc2626' && styles.settingsIconRed]}>
               <Ionicons name={item.icon} size={18} color={item.color} />
             </View>
-            <Text style={[styles.settingsLabel, { flex: 1 }, item.label === 'تسجيل الخروج' && { color: '#dc2626' }]}>
+            <Text style={[styles.settingsLabel, { flex: 1 }, item.color === '#dc2626' && { color: '#dc2626' }]}>
               {item.label}
             </Text>
-            {item.label !== 'تسجيل الخروج' && (
+            {item.color !== '#dc2626' && (
               <Ionicons name="chevron-forward" size={16} color="#ccc" />
             )}
           </TouchableOpacity>
@@ -193,6 +246,7 @@ const styles = StyleSheet.create({
   profileCard:   { backgroundColor: BLUE, borderRadius: 20, padding: 24, alignItems: 'center', marginBottom: 28, gap: 8 },
   avatarWrap:    { position: 'relative', marginBottom: 4 },
   avatar:        { width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: 'rgba(255,255,255,0.4)' },
+  avatarImage:   { width: 80, height: 80, borderRadius: 40, borderWidth: 3, borderColor: 'rgba(255,255,255,0.4)' },
   avatarText:    { fontSize: 28, fontWeight: '700', color: '#fff' },
   editAvatarBtn: { position: 'absolute', bottom: 0, right: 0, width: 26, height: 26, borderRadius: 13, backgroundColor: ORANGE, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: BLUE },
   profileName:   { fontSize: 20, fontWeight: '700', color: '#fff' },

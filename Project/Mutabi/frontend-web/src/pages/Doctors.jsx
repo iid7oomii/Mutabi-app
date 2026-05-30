@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
 import { useNavigate } from 'react-router-dom'
 import { WarningIcon, CloseIcon, TrashIcon } from '../components/Icons'
@@ -31,7 +32,7 @@ export default function Doctors() {
 	const navigate = useNavigate()
 
   const load = () => {
-    fetch('/api/v1/users?role=Doctor', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/users?role=Doctor`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setDoctors(Array.isArray(data) ? data : []))
       .catch(console.error)
@@ -56,7 +57,7 @@ export default function Doctors() {
 
     setSaving(true)
     try {
-      const res = await fetch('/api/v1/auth/doctor', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/doctor`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -82,7 +83,7 @@ export default function Doctors() {
     setDeleting(true)
     setDeleteError(null)
     try {
-      const res = await fetch(`/api/v1/users/${confirmDelete.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/users/${confirmDelete.id}`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -102,8 +103,8 @@ export default function Doctors() {
 
   const handleToggleStatus = async (doctor) => {
     const endpoint = doctor.is_active
-      ? `/api/v1/users/${doctor.id}/deactivate`
-      : `/api/v1/users/${doctor.id}/activate`
+      ? `${API_BASE_URL}/api/v1/users/${doctor.id}/deactivate`
+      : `${API_BASE_URL}/api/v1/users/${doctor.id}/activate`
     await fetch(endpoint, { method: 'PUT', credentials: 'include' })
     load()
   }

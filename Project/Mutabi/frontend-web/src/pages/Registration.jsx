@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
 import { WarningIcon, CheckIcon, ChevronDownIcon } from '../components/Icons'
 
@@ -47,7 +48,7 @@ export default function Registration() {
   }
 
   const loadDoctors = () => {
-    fetch('/api/v1/users?role=Doctor', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/users?role=Doctor`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setDoctors(Array.isArray(data) ? data : []))
       .catch(console.error)
@@ -90,7 +91,7 @@ export default function Registration() {
 
   setSaving(true)
   try {
-    const res = await fetch('/api/v1/children/register-family', {
+    const res = await fetch(`${API_BASE_URL}/api/v1/children/register-family`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },

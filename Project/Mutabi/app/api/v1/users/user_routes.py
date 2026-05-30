@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, g
 from app.facade.user_facade import UserFacade
 from app.repositories.user_repsitories import UserRepositories
 from app.api.v1.middleware.role_required import role_required
+from app.repositories.clinic_repository import ClinicRepository
 from app import db
 from app.models.Children import Children
 from app.models.Appointments import Appointments
@@ -237,11 +238,14 @@ def update_me():
         description: خطأ في البيانات
     """
     try:
-        from flask_jwt_extended import get_jwt_identity
-        user_id = get_jwt_identity()
+        user_id = g.jwt_claims["sub"]
         data = request.get_json()
+        role = g.jwt_claims.get("role", "")
 
         allowed = ["first_name", "second_name", "phone"]
+        if role == "Doctor":
+            allowed.append("specialty")
+
         filtered_data = {k: v for k, v in data.items() if k in allowed}
 
         user = UserRepositories.update(user_id, filtered_data)
@@ -251,6 +255,34 @@ def update_me():
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     
+
+@user_bp.route("/clinic/me", methods=["PUT"])
+@role_required("Admin")
+def update_clinic():
+    """Update the admin's clinic information."""
+    try:
+        clinic_id = g.jwt_claims["clinic_id"]
+        clinic = ClinicRepository.get_by_id(clinic_id)
+        if not clinic:
+            return jsonify({"error": "Clinic not found"}), 404
+
+        data = request.get_json()
+        allowed = ["name", "contact_phone", "address"]
+        for key in allowed:
+            if key in data and data[key] is not None:
+                setattr(clinic, key, data[key])
+
+        db.session.commit()
+        return jsonify({
+            "name": clinic.name,
+            "contact_phone": clinic.contact_phone,
+            "address": clinic.address,
+            "logo_url": clinic.logo_url,
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
+
 
 @user_bp.route("/<user_id>/patients", methods=["GET"])
 @role_required("Admin")
