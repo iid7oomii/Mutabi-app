@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function Header({ clinicName = 'Clinic Name', onBellPress }) {
+  const insets = useSafeAreaInsets()
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
       <View style={styles.left}>
         <View style={styles.avatar}>
           <Ionicons name="person" size={16} color="#1F6FEB" />
@@ -26,7 +28,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingBottom: 14,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',

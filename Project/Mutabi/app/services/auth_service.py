@@ -1,11 +1,12 @@
+import re
+import os
+import traceback
+from flask_jwt_extended import decode_token
 from app.repositories.user_repsitories import UserRepositories
 from app.utils.helpers import generate_token, generate_temp_password, generate_reset_token
 from app.models.EnumUsers import RoleUser
-import re
-import os
 from app.repositories.clinic_repository import ClinicRepository
 from app.integrations.email import ResendEmailClient
-from flask_jwt_extended import decode_token
 
 
 
@@ -185,7 +186,9 @@ class AuthService:
                 reset_link=reset_link,
             )
         except Exception as e:
-            print(f"Password reset email failed: {e}")
+            print(f"[send_password_reset FAILED] to={user.email} error={e}")
+            traceback.print_exc()
+            raise
 
         return {"message": "إذا كان البريد الإلكتروني مسجلاً، سيصلك رابط إعادة التعيين قريباً"}
 

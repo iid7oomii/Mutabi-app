@@ -2,7 +2,7 @@ from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import String, Text, ForeignKey, Date
 from app.models.BaseModel import BaseModel
-from datetime import date
+from datetime import date, datetime
 
 if TYPE_CHECKING:
     from app.models.Clinics import Clinic
@@ -45,7 +45,6 @@ class Children(BaseModel):
         if value is None:
             raise ValueError("date_of_birth must not be empty")
         if isinstance(value, str):
-            from datetime import datetime
             value = datetime.strptime(value, '%Y-%m-%d').date()
         if value > date.today():
             raise ValueError("date_of_birth must not be in the future")

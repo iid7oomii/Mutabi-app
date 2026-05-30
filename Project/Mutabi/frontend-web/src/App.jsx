@@ -14,7 +14,11 @@ import Doctors from './pages/Doctors'
 import DoctorProgress from './pages/DoctorProgress'
 import DoctorProfile from './pages/DoctorProfile'
 import ExerciseLibrary from './pages/ExerciseLibrary'
+import DoctorNotes from './pages/DoctorNotes'
+import Appointments from './pages/Appointments'
+import ArticlesPage from './pages/ArticlesPage'
 import SetPassword from './pages/SetPassword'
+import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import './App.css'
 
@@ -28,13 +32,13 @@ function ProtectedRoute({ children }) {
       <div className="text-orange-500 text-lg">جاري التحميل...</div>
     </div>
   )
-	console.log("قيمة Active القادمة من الباك إند هي:", user.active, "ونوعها:", typeof user.active);
+
+  if (!user) return <Navigate to="/" replace />
+
   if (!user.active && location.pathname !== '/set_password')
     return <Navigate to="/set_password" replace />
 
-  if (!user) return <Navigate to="/" replace />
   return children
-
 }
 
 function AdminRoute({ children }) {
@@ -130,11 +134,22 @@ function App() {
                 </AdminRoute>
                 } />
 
-                <Route path='/set_Password' element={
-                    <ProtectedRoute>
-                        <SetPassword />
-                    </ProtectedRoute>
+                <Route path="/notes" element={
+                <ProtectedRoute><DoctorNotes /></ProtectedRoute>
                 } />
+
+                <Route path="/appointments" element={
+                <ProtectedRoute><Appointments /></ProtectedRoute>
+                } />
+
+                <Route path="/articles" element={
+                <ProtectedRoute><ArticlesPage /></ProtectedRoute>
+                } />
+
+                <Route path='/set_password' element={<SetPassword />} />
+
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
     </Routes>
     
   )

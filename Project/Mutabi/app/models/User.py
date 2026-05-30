@@ -35,6 +35,7 @@ class Users(BaseModel):
     )
     custom_relationship: Mapped[Optional[str]] = mapped_column(String(100))
     is_active: Mapped[bool] = mapped_column(default=False)
+    profile_picture_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     device_token: Mapped[Optional[str]] = mapped_column(String(255))
     invitation_token: Mapped[Optional[str]] = mapped_column(String(255))
 

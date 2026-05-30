@@ -1,6 +1,9 @@
 import { I18nManager } from 'react-native'
+import { useEffect, useRef } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import * as Notifications from 'expo-notifications'
+import { setupNotificationHandler, createAndroidChannel } from './utils/notifications'
 import Login                  from './login'
 import MainTabs               from './screens/MainTabs'
 import ExerciseDetailScreen   from './screens/ExerciseDetailScreen'
@@ -21,6 +24,22 @@ I18nManager.forceRTL(true)
 const Stack = createNativeStackNavigator()
 
 export default function App() {
+  const notificationListener = useRef()
+  const responseListener     = useRef()
+
+  useEffect(() => {
+    setupNotificationHandler()
+    createAndroidChannel()
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(() => {})
+    responseListener.current     = Notifications.addNotificationResponseReceivedListener(() => {})
+
+    return () => {
+      notificationListener.current?.remove()
+      responseListener.current?.remove()
+    }
+  }, [])
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false, animation: 'slide_from_left' }}>

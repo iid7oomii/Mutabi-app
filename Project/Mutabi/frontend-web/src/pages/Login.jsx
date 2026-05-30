@@ -67,10 +67,13 @@ export default function Login() {
       return
     }
 
-
+    if (data.role === 'parent') {
+      await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'include' })
+      setError('حساب ولي الأمر متاح فقط عبر تطبيق الجوال')
+      return
+    }
 
     await fetchUser()
-
 
   } catch {
     setError('تعذر الاتصال بالخادم')
@@ -157,6 +160,11 @@ export default function Login() {
             </button>
 
           </form>
+        <div className="flex justify-end mb-2">
+        <a href="/forgot-password" className="text-sm hover:underline" style={{ color: '#0F4C81' }}>
+            نسيت كلمة المرور؟
+        </a>
+        </div>
 
           <p className="text-center text-sm text-gray-400 mt-6">
             ليس لديك حساب؟{' '}

@@ -1,3 +1,4 @@
+from app import db
 from app.repositories.user_repsitories import UserRepositories
 from app.repositories.children_repository import ChildrenRepository
 from app.repositories.clinic_repository import ClinicRepository
@@ -6,15 +7,14 @@ from app.repositories.appointments_repository import AppointmentsRepository
 from app.repositories.plan_exercises_repository import PlanExercisesRepository
 from app.repositories.feedback_repository import FeedbackRepository
 from app.models.EnumUsers import RoleUser
-from app import db
 from app.models.Children import Children
 from app.models.User import Users
-from app import db
 from app.models.Exercises_Feedback import ExercisesFeedback
 from app.models.Plan_Exercises import PlanExercises
 from app.models.Therapy_plans import TherapyPlans
 from app.models.Appointments import Appointments
 from app.models.Doctor_Notes import DoctorNotes
+from app.integrations.email import ResendEmailClient
 
 
 class ChildrenService:
@@ -197,8 +197,6 @@ class ChildrenService:
 
     @staticmethod
     def register_family(data: dict, claims: dict) -> dict:
-        from app import db
-
         if UserRepositories.email_exists(data["parent_email"]):
             raise ValueError("Email already exists")
 
@@ -259,7 +257,6 @@ class ChildrenService:
         clinic = ClinicRepository.get_by_id(claims["clinic_id"])
         clinic_name = clinic.name if clinic else ""
         try:
-            from app.integrations.email import ResendEmailClient
             ResendEmailClient().send_parent_invitation(
                 to_email=data["parent_email"],
                 parent_name=f"{data['parent_first_name']} {data['parent_second_name']}",

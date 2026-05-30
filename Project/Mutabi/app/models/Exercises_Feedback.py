@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy import Integer, Text, String, ForeignKey, Date
 import sqlalchemy
 from app.models.BaseModel import BaseModel
-from datetime import date
+from datetime import date, datetime, timedelta
 from app.models.EnumCompletion import EnumCompletion
 import re
 
@@ -38,9 +38,8 @@ class ExercisesFeedback(BaseModel):
         if value is None:
             raise ValueError("feedback_date must not be empty")
         if isinstance(value, str):
-            from datetime import datetime
             value = datetime.strptime(value, '%Y-%m-%d').date()
-        if value > date.today():
+        if value > date.today() + timedelta(days=1):
             raise ValueError("feedback_date must not be in the future")
         return value
 

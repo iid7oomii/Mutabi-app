@@ -58,6 +58,7 @@ export default function SetPassword() {
 			}
 
 			await fetchUser()
+            navigate('/dashboard', { replace: true })
 
 		} catch {
 			setError('تعذر الاتصال بالخادم')

@@ -14,6 +14,10 @@ class ExercisesService:
             "title": data["title"],
             "description": data["description"],
             "doctor_media_url": data.get("doctor_media_url"),
+            "icon": data.get("icon"),
+            "difficulty": data.get("difficulty"),
+            "goal": data.get("goal"),
+            "steps_json": data.get("steps_json"),
         })
         return exercise.to_dict()
 

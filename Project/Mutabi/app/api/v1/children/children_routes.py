@@ -1,6 +1,5 @@
-# api/v1/children/children_routes.py
-from flask import Blueprint, request, jsonify
 from flask import Blueprint, request, jsonify, g
+from app import db
 from app.services.children_service import ChildrenService
 from app.api.v1.middleware.role_required import role_required
 from app.repositories.child_request_repository import ChildRequestRepository
@@ -214,7 +213,6 @@ def delete_child(child_id):
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     except Exception as e:
-        from app import db
         db.session.rollback()
         return jsonify({"error": str(e)}), 400
     

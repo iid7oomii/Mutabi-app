@@ -1,6 +1,10 @@
 from flask import Blueprint, request, jsonify, g
 from app.services.doctor_notes_service import DoctorNotesService
 from app.api.v1.middleware.role_required import role_required
+from app.repositories.children_repository import ChildrenRepository
+from app.repositories.user_repsitories import UserRepositories
+from app.repositories.notification_repository import NotificationRepository
+from app.integrations.notifications import FCMNotificationClient
 
 doctor_notes_bp = Blueprint("doctor_notes", __name__, url_prefix="/doctor-notes")
 
@@ -44,6 +48,29 @@ def create_note():
         claims = g.jwt_claims
         data["doctor_id"] = claims["sub"]
         result = DoctorNotesService.create(data)
+
+        try:
+            child = ChildrenRepository.get_by_id(data["child_id"])
+            if child:
+                parent = child.parent
+                doctor = UserRepositories.get_by_id(data["doctor_id"])
+                doctor_name = f"{doctor.first_name} {doctor.second_name}" if doctor else "الدكتور"
+                child_name = child.first_name
+
+                NotificationRepository.create(
+                    user_id=str(parent.id),
+                    title="ملاحظة جديدة من الدكتور",
+                    body=f"د. {doctor_name} أضاف ملاحظة جديدة لـ {child_name}.",
+                    type="doctor_note",
+                )
+
+                if parent.device_token:
+                    FCMNotificationClient().notify_parent_new_note(
+                        parent.device_token, doctor_name, child_name
+                    )
+        except Exception as notif_err:
+            print(f"[Notification] Failed: {notif_err}")
+
         return jsonify(result), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

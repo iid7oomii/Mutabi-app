@@ -1,8 +1,8 @@
 from typing import Optional, TYPE_CHECKING
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
-from sqlalchemy import Text, ForeignKey, Date
+from sqlalchemy import Text, ForeignKey, DateTime
 from app.models.BaseModel import BaseModel
-from datetime import date
+from datetime import datetime
 
 if TYPE_CHECKING:
     from app.models.Children import Children
@@ -14,7 +14,7 @@ class Appointments(BaseModel):
 
     child_id: Mapped[str] = mapped_column(ForeignKey('children.id'))
     doctor_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
-    appointment: Mapped[date] = mapped_column(Date)
+    appointment: Mapped[datetime] = mapped_column(DateTime)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     children: Mapped['Children'] = relationship(back_populates='appointments')
@@ -31,10 +31,14 @@ class Appointments(BaseModel):
         if value is None:
             raise ValueError("appointment date must not be empty")
         if isinstance(value, str):
-            from datetime import datetime
-            value = datetime.strptime(value, '%Y-%m-%d').date()
-        if value < date.today():
-            raise ValueError("appointment date must not be in the past")
+            for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%d %H:%M', '%Y-%m-%d'):
+                try:
+                    value = datetime.strptime(value, fmt)
+                    break
+                except ValueError:
+                    continue
+            else:
+                raise ValueError("Invalid date format. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM")
         return value
 
     @validates('notes')

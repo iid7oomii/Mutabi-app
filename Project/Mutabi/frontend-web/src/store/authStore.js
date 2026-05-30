@@ -15,12 +15,14 @@ const useAuthStore = create((set) => ({
       })
       if (!res.ok) {
         set({ user: null, loading: false })
-        return
+        return null
       }
       const data = await res.json()
       set({ user: data, loading: false })
+      return data
     } catch {
       set({ user: null, loading: false })
+      return null
     }
   },
 }))

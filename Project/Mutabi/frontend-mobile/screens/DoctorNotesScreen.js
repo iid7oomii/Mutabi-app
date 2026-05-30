@@ -5,6 +5,7 @@ import {
 } from 'react-native'
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { apiGet } from '../utils/api'
 
 const BLUE   = '#1F6FEB'
@@ -20,6 +21,7 @@ function formatDate(dateStr) {
 export default function DoctorNotesScreen() {
   const navigation = useNavigation()
   const route      = useRoute()
+  const insets     = useSafeAreaInsets()
   const childId    = route.params?.childId
 
   const [notes, setNotes]     = useState([])
@@ -46,7 +48,7 @@ export default function DoctorNotesScreen() {
   return (
     <View style={styles.container}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-forward" size={22} color="#1a1a2e" />
         </TouchableOpacity>
@@ -104,7 +106,7 @@ export default function DoctorNotesScreen() {
 
 const styles = StyleSheet.create({
   container:   { flex: 1, backgroundColor: '#f7f9fc' },
-  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   backBtn:     { width: 38, height: 38, borderRadius: 19, backgroundColor: '#f5f5f5', alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '700', color: '#1a1a2e' },
   center:      { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },

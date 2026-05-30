@@ -87,6 +87,8 @@ def parent_home():
                 "latest_note": None,
                 "upcoming_appointment": None,
                 "email": parent.email,
+                "phone": parent.phone,
+                "profile_picture_url": parent.profile_picture_url,
             }), 200
 
         child = children[0]
@@ -94,12 +96,18 @@ def parent_home():
         active_plan = TherapyPlansRepository.get_active_by_child(child_id)
         latest_note = DoctorNotesRepository.get_latest_by_child(child_id)
         upcoming = AppointmentsRepository.get_upcoming_by_child(child_id)
-        today_exercises = PlanExercisesRepository.get_today_by_child(child_id)
+        day_param = request.args.get('day')
+        if day_param:
+            today_exercises = PlanExercisesRepository.get_by_day_and_child(child_id, day_param)
+        else:
+            today_exercises = PlanExercisesRepository.get_today_by_child(child_id)
 
         return jsonify({
             "parent_name": f"{parent.first_name} {parent.second_name}",
             "email": parent.email,
+            "phone": parent.phone,
             "clinic_name": clinic.name if clinic else "",
+            "profile_picture_url": parent.profile_picture_url,
             "child": {
                 "id": child_id,
                 "name": f"{child.first_name} {child.second_name}",
@@ -109,6 +117,7 @@ def parent_home():
                 **latest_note.to_dict(),
                 "doctor_name": f"{latest_note.doctor.first_name} {latest_note.doctor.second_name}",
                 "doctor_specialty": latest_note.doctor.specialty,
+                "doctor_profile_picture_url": latest_note.doctor.profile_picture_url,
             } if latest_note else None,
             "upcoming_appointment": upcoming.to_dict() if upcoming else None,
             "today_exercises": [
@@ -116,6 +125,10 @@ def parent_home():
                 "id": str(pe.id),
                 "exercise_title": pe.exercise.title,
                 "exercise_description": pe.exercise.description,
+                "exercise_icon": pe.exercise.icon,
+                "exercise_difficulty": pe.exercise.difficulty,
+                "exercise_goal": pe.exercise.goal,
+                "exercise_steps_json": pe.exercise.steps_json,
                 "reps": pe.reps,
                 "duration_minutes": pe.duration_minutes,
                 }
@@ -147,6 +160,10 @@ def get_exercises_by_day(day):
                 "id": str(pe.id),
                 "exercise_title": pe.exercise.title,
                 "exercise_description": pe.exercise.description,
+                "exercise_icon": pe.exercise.icon,
+                "exercise_difficulty": pe.exercise.difficulty,
+                "exercise_goal": pe.exercise.goal,
+                "exercise_steps_json": pe.exercise.steps_json,
                 "reps": pe.reps,
                 "duration_minutes": pe.duration_minutes,
             }

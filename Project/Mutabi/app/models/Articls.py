@@ -8,7 +8,7 @@ class Articles(BaseModel):
 
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
-    image_url: Mapped[Optional[str]] = mapped_column(String(255))
-    article_url: Mapped[str] = mapped_column(String(255))
+    image_url: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    article_url: Mapped[str] = mapped_column(Text)
     
 

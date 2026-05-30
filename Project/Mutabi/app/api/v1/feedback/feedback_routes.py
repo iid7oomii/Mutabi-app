@@ -1,10 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from flask_jwt_extended import get_jwt
 from app.services.feedback_service import FeedbackService
 from app.api.v1.middleware.role_required import role_required
 from app.repositories.user_repsitories import UserRepositories
-from app.models.EnumUsers import RoleUser
-from flask import Blueprint, request, jsonify, g
+from app.repositories.children_repository import ChildrenRepository
+from app.repositories.feedback_repository import FeedbackRepository
+from app.repositories.notification_repository import NotificationRepository
+from app.integrations.notifications import FCMNotificationClient
 
 feedback_bp = Blueprint("feedback", __name__, url_prefix="/feedback")
 
@@ -282,10 +284,64 @@ def reply_to_feedback(feedback_id):
     try:
         data = request.get_json()
         result = FeedbackService.update(feedback_id, {"doctor_reply": data["reply"]})
+
+        try:
+            feedback = FeedbackRepository.get_by_id(feedback_id)
+            if feedback:
+                parent = feedback.plan_exercise.therapy_plan.children.parent
+                doctor = feedback.plan_exercise.therapy_plan.children.doctor
+                doctor_name = f"{doctor.first_name} {doctor.second_name}" if doctor else "الدكتور"
+
+                NotificationRepository.create(
+                    user_id=str(parent.id),
+                    title="رد الدكتور",
+                    body=f"د. {doctor_name} رد على تقريرك.",
+                    type="feedback_reply",
+                )
+
+                if parent.device_token:
+                    FCMNotificationClient().notify_parent_feedback_reply(
+                        parent.device_token, doctor_name
+                    )
+        except Exception as notif_err:
+            print(f"[Notification] Failed: {notif_err}")
+
         return jsonify(result), 200
     except ValueError as e:
         return jsonify({"error": str(e)}), 404
     
+
+@feedback_bp.route("/parent/history", methods=["GET"])
+@role_required("Parent")
+def get_parent_history():
+    """Get full feedback history for the parent's child."""
+    try:
+        claims = g.jwt_claims
+        parent_id = claims["sub"]
+
+        children = ChildrenRepository.get_by_parent(parent_id)
+        if not children:
+            return jsonify([]), 200
+
+        child_id = str(children[0].id)
+        feedbacks = FeedbackRepository.get_all_by_child(child_id)
+
+        result = []
+        for f in feedbacks:
+            result.append({
+                "id": str(f.id),
+                "date": str(f.feedback_date),
+                "completion_status": f.completion_status.value if hasattr(f.completion_status, 'value') else f.completion_status,
+                "pain_level": f.pain_level,
+                "exercise_title": f.plan_exercise.exercise.title,
+                "notes": f.parent_notes or "",
+                "created_at": f.created_at.isoformat() if f.created_at else str(f.feedback_date),
+            })
+
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 @feedback_bp.route("/doctor/progress", methods=["GET"])
 @role_required("Doctor", "Admin")
@@ -295,7 +351,6 @@ def get_doctor_progress():
         role = claims.get("role", "").lower()
 
         if role == "admin":
-            from app.repositories.user_repsitories import UserRepositories
             doctors = UserRepositories.get_doctors_by_clinic(claims["clinic_id"])
             
             adherence_total = 0

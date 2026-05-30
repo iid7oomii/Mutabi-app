@@ -4,10 +4,12 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons'
 import LogoMark from './assets/logo-mark.svg'
 import {
   View, Text, TextInput, TouchableOpacity,
-  StyleSheet, SafeAreaView, KeyboardAvoidingView,
+  StyleSheet, KeyboardAvoidingView,
   Platform, ActivityIndicator,
 } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { apiPost } from './utils/api'
+import { registerDeviceToken } from './utils/notifications'
 
 const BLUE = '#1F6FEB'
 
@@ -41,6 +43,7 @@ export default function Login({ navigation }) {
 
       if (data.token) {
         await AsyncStorage.setItem('token', data.token)
+        registerDeviceToken(data.token)
       }
 
       if (!data.active) {

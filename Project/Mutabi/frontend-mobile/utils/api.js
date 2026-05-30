@@ -48,6 +48,15 @@ export async function getLocalSessions() {
   return raw ? JSON.parse(raw) : []
 }
 
+export function localDayName() {
+  const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+  return days[new Date().getDay()]
+}
+
 export function todayString() {
-  return new Date().toISOString().split('T')[0]
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
 }

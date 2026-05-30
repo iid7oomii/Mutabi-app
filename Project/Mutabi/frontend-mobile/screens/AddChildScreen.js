@@ -6,12 +6,14 @@ import {
 } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { apiPost } from '../utils/api'
 
 const BLUE = '#1F6FEB'
 
 export default function AddChildScreen() {
   const navigation = useNavigation()
+  const insets     = useSafeAreaInsets()
 
   const [firstName,       setFirstName]       = useState('')
   const [secondName,      setSecondName]       = useState('')
@@ -64,7 +66,7 @@ export default function AddChildScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: '#f5f7fb' }}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <Ionicons name="arrow-forward" size={22} color="#1a1a2e" />
         </TouchableOpacity>
@@ -139,7 +141,7 @@ function Field({ label, value, onChangeText, placeholder, keyboardType, hint, mu
 }
 
 const styles = StyleSheet.create({
-  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 56, paddingBottom: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  header:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 16, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   backBtn:     { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '700', color: '#1a1a2e' },
   scroll:      { padding: 20, paddingBottom: 40 },

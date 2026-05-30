@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify, make_response, g
 from flask_jwt_extended import get_jwt_identity, decode_token, jwt_required
+import traceback
 from app.facade.auth_facade import AuthFacade
 from app.api.v1.middleware.role_required import role_required
 from app.repositories.user_repsitories import UserRepositories
+from app.repositories.clinic_repository import ClinicRepository
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
@@ -89,7 +91,7 @@ def admin_signup():
             'token',
             result["token"],
             httponly=True,
-            secure=False,
+            secure=True,
             samesite='Strict',
             max_age=86400
         )
@@ -156,7 +158,7 @@ def login():
             'token',
             result["token"],
             httponly=True,
-            secure=False,
+            secure=True,
             samesite='Strict',
             max_age=86400 
         )
@@ -363,7 +365,7 @@ def parent_signup():
             'token',
             result["token"],
             httponly=True,
-            secure=False,
+            secure=True,
             samesite='Strict',
             max_age=86400
         )
@@ -444,14 +446,23 @@ def me():
         user = UserRepositories.get_by_id(claims["sub"])
         if not user:
             return jsonify({"error": "User not found"}), 404
-        
+
+        clinic = ClinicRepository.get_by_id(claims["clinic_id"])
+
         return jsonify({
             "user_id": claims["sub"],
             "role": claims["role"],
             "clinic_id": claims["clinic_id"],
             "first_name": user.first_name,
             "second_name": user.second_name,
+            "phone": user.phone,
+            "specialty": user.specialty,
             "active": user.is_active,
+            "profile_picture_url": user.profile_picture_url,
+            "clinic_logo_url": clinic.logo_url if clinic else None,
+            "clinic_name": clinic.name if clinic else None,
+            "clinic_contact_phone": clinic.contact_phone if clinic else None,
+            "clinic_address": clinic.address if clinic else None,
         }), 200
     except Exception:
         return jsonify({"error": "Unauthorized"}), 401
@@ -466,7 +477,9 @@ def forgot_password():
             return jsonify({"error": "البريد الإلكتروني مطلوب"}), 400
         result = AuthFacade.forgot_password(email)
         return jsonify(result), 200
-    except Exception:
+    except Exception as e:
+        print(f"[forgot_password ERROR] {e}")
+        traceback.print_exc()
         return jsonify({"message": "إذا كان البريد الإلكتروني مسجلاً، سيصلك رابط إعادة التعيين قريباً"}), 200
 
 
