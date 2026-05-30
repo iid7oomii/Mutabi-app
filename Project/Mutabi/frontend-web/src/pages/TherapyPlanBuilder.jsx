@@ -4,6 +4,7 @@ import { WarningIcon, CheckIcon } from '../components/Icons'
 import PlanForm from '../components/therapy/PlanForm'
 import ExerciseList from '../components/therapy/ExerciseList'
 import ExerciseLibrary from '../components/therapy/ExerciseLibrary'
+import { API_BASE_URL } from '../config';
 import useTherapyPlan from '../hooks/useTherapyPlan'
 
 export default function TherapyPlanBuilder() {
@@ -40,7 +41,7 @@ export default function TherapyPlanBuilder() {
 
         let plan
         if (existingPlanId) {
-            const updateRes = await fetch(`/api/v1/therapy-plans/${existingPlanId}`, {
+            const updateRes = await fetch(`${API_BASE_URL}/api/v1/therapy-plans/${existingPlanId}`, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
@@ -52,7 +53,7 @@ export default function TherapyPlanBuilder() {
             }
             plan = await updateRes.json()
         } else {
-            const planRes = await fetch('/api/v1/therapy-plans/', {
+            const planRes = await fetch(`${API_BASE_URL}/api/v1/therapy-plans/`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
@@ -67,7 +68,7 @@ export default function TherapyPlanBuilder() {
 
         await Promise.all(
             selected.map(({ exercise, target_days, reps, duration_minutes }) =>
-                fetch('/api/v1/plan-exercises/', {
+                fetch(`${API_BASE_URL}/api/v1/plan-exercises/`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },

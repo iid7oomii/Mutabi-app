@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { API_BASE_URL } from '../config';
 
 const useAuthStore = create((set) => ({
   user: null,
@@ -10,7 +11,7 @@ const useAuthStore = create((set) => ({
 
   fetchUser: async () => {
     try {
-      const res = await fetch('/api/v1/auth/me', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/me`, {
         credentials: 'include',
       })
       if (!res.ok) {

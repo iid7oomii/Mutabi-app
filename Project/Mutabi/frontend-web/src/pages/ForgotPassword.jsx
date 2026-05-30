@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '../config';
 import logo from '../assets/logo-mark.svg'
 
 export default function ForgotPassword() {
@@ -18,7 +19,7 @@ export default function ForgotPassword() {
     }
     setLoading(true)
     try {
-      await fetch('/api/v1/auth/forgot-password', {
+      await fetch(`${API_BASE_URL}/api/v1/auth/forgot-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim() }),

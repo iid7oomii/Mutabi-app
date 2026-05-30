@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { API_BASE_URL } from '../config';
 import logo from '../assets/logo-mark.svg'
 
 export default function ResetPassword() {
@@ -34,7 +35,7 @@ export default function ResetPassword() {
 
     setLoading(true)
     try {
-      const res = await fetch('/api/v1/auth/reset-password-confirm', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/reset-password-confirm`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, new_password: newPassword }),

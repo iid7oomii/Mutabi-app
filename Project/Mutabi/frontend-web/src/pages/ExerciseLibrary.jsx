@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
+import { API_BASE_URL } from '../config';
 import { WarningIcon, CloseIcon } from '../components/Icons'
 
 const EX_COLORS = [
@@ -92,7 +93,7 @@ export default function ExerciseLibrary() {
   const [form, setForm]           = useState(EMPTY_FORM)
 
   const load = () => {
-    fetch('/api/v1/exercises', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/exercises`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setExercises(Array.isArray(data) ? data : []))
       .catch(console.error)
@@ -109,7 +110,7 @@ export default function ExerciseLibrary() {
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this exercise?')) return
-    const res = await fetch(`/api/v1/exercises/${id}`, { method: 'DELETE', credentials: 'include' })
+    const res = await fetch(`${API_BASE_URL}/api/v1/exercises/${id}`, { method: 'DELETE', credentials: 'include' })
     if (!res.ok) { const d = await res.json(); setError(d.error || 'Failed to delete'); return }
     load()
   }
@@ -121,7 +122,7 @@ export default function ExerciseLibrary() {
     try {
       const fd = new FormData()
       fd.append('file', file); fd.append('folder', 'exercises')
-      const res = await fetch('/api/v1/upload/media', { method: 'POST', credentials: 'include', body: fd })
+      const res = await fetch(`${API_BASE_URL}/api/v1/upload/media`, { method: 'POST', credentials: 'include', body: fd })
       if (!res.ok) throw new Error('Upload failed')
       const data = await res.json()
       setForm(f => ({ ...f, doctor_media_url: data.url }))
@@ -154,7 +155,7 @@ export default function ExerciseLibrary() {
 
     setSaving(true)
     try {
-      const res = await fetch('/api/v1/exercises/', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/exercises/`, {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

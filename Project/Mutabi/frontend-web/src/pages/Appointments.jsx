@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
 
 const AVATAR_COLORS = ['#4ECDC4','#45B7D1','#96C93D','#F7A072','#9B59B6','#3498DB','#E67E22','#1ABC9C']
@@ -28,7 +29,7 @@ export default function Appointments() {
   const [search, setSearch]     = useState('')
 
   useEffect(() => {
-    fetch('/api/v1/children/', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/children/`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => Array.isArray(data) ? setChildren(data) : [])
       .catch(() => {})
@@ -38,7 +39,7 @@ export default function Appointments() {
     if (!selected) return
     setLoading(true)
     setAppts([])
-    fetch(`/api/v1/appointments/child/${selected.id}`, { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/appointments/child/${selected.id}`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setAppts(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -50,7 +51,7 @@ export default function Appointments() {
     setSaving(true)
     setError('')
     try {
-      const res  = await fetch('/api/v1/appointments/', {
+      const res  = await fetch(`${API_BASE_URL}/api/v1/appointments/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -74,7 +75,7 @@ export default function Appointments() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this appointment?')) return
-    await fetch(`/api/v1/appointments/${id}`, { method: 'DELETE', credentials: 'include' })
+    await fetch(`${API_BASE_URL}/api/v1/appointments/${id}`, { method: 'DELETE', credentials: 'include' })
     setAppts(prev => prev.filter(a => a.id !== id))
   }
 

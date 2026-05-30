@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
 
 const AVATAR_COLORS = ['#4ECDC4','#45B7D1','#96C93D','#F7A072','#9B59B6','#3498DB','#E67E22','#1ABC9C']
@@ -20,7 +21,7 @@ export default function DoctorNotes() {
   const [search, setSearch]           = useState('')
 
   useEffect(() => {
-    fetch('/api/v1/children/', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/children/`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => Array.isArray(data) ? setChildren(data) : [])
       .catch(() => {})
@@ -30,7 +31,7 @@ export default function DoctorNotes() {
     if (!selected) return
     setLoadingNotes(true)
     setNotes([])
-    fetch(`/api/v1/doctor-notes/child/${selected.id}`, { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/doctor-notes/child/${selected.id}`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setNotes(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -42,7 +43,7 @@ export default function DoctorNotes() {
     setSaving(true)
     setError('')
     try {
-      const res  = await fetch('/api/v1/doctor-notes/', {
+      const res  = await fetch(`${API_BASE_URL}/api/v1/doctor-notes/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -61,7 +62,7 @@ export default function DoctorNotes() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this note?')) return
-    await fetch(`/api/v1/doctor-notes/${id}`, { method: 'DELETE', credentials: 'include' })
+    await fetch(`${API_BASE_URL}/api/v1/doctor-notes/${id}`, { method: 'DELETE', credentials: 'include' })
     setNotes(prev => prev.filter(n => n.id !== id))
   }
 

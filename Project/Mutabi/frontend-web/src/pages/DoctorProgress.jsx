@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
 import { DotIcon } from '../components/Icons'
 
@@ -40,7 +41,7 @@ export default function DoctorProgress() {
   const [hoveredDay, setHoveredDay] = useState(null)
 
   useEffect(() => {
-    fetch('/api/v1/feedback/doctor/progress', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/feedback/doctor/progress`, { credentials: 'include' })
       .then(r => r.json())
       .then(setData)
       .catch(console.error)

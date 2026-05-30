@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
+import { API_BASE_URL } from '../config';
 import logo from '../assets/logo-mark.svg';
 
 
@@ -43,7 +44,7 @@ export default function SetPassword() {
 
 
 		try {
-			const res = await fetch('/api/v1/auth/set_password', {
+			const res = await fetch(`${API_BASE_URL}/api/v1/auth/set_password`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
 				credentials: 'include',

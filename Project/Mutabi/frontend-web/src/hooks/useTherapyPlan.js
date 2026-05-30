@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
 
 export default function useTherapyPlan() {
@@ -32,15 +33,15 @@ export default function useTherapyPlan() {
     const load = async () => {
       try {
         const [cRes, eRes] = await Promise.all([
-          fetch('/api/v1/children', { credentials: 'include' }),
-          fetch('/api/v1/exercises', { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/exercises`, { credentials: 'include' }),
         ])
         const [cData, eData] = await Promise.all([cRes.json(), eRes.json()])
         setPatients(Array.isArray(cData) ? cData : [])
         setExercises(Array.isArray(eData) ? eData : [])
 
         if (isAdmin) {
-          const dRes = await fetch('/api/v1/users?role=Doctor', { credentials: 'include' })
+          const dRes = await fetch(`${API_BASE_URL}/api/v1/users?role=Doctor`, { credentials: 'include' })
           const dData = await dRes.json()
           setDoctors(Array.isArray(dData) ? dData : [])
         }

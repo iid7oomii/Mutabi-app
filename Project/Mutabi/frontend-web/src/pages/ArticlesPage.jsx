@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
+import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
 
 function formatDate(s) {
@@ -22,7 +23,7 @@ export default function ArticlesPage() {
   const [search, setSearch]     = useState('')
 
   useEffect(() => {
-    fetch('/api/v1/articles/', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/articles/`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setArticles(Array.isArray(data) ? data : []))
       .catch(() => {})
@@ -37,7 +38,7 @@ export default function ArticlesPage() {
     setSaving(true)
     setError('')
     try {
-      const res  = await fetch('/api/v1/articles/', {
+      const res  = await fetch(`${API_BASE_URL}/api/v1/articles/`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -62,7 +63,7 @@ export default function ArticlesPage() {
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this article?')) return
-    await fetch(`/api/v1/articles/${id}`, { method: 'DELETE', credentials: 'include' })
+    await fetch(`${API_BASE_URL}/api/v1/articles/${id}`, { method: 'DELETE', credentials: 'include' })
     setArticles(prev => prev.filter(a => a.id !== id))
   }
 

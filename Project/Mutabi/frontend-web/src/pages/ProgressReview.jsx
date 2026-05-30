@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
+import { API_BASE_URL } from '../config';
 import { ChevronRightIcon, DotIcon } from '../components/Icons'
 
 function formatDate(dateStr) {
@@ -52,8 +53,8 @@ export default function ProgressReview() {
     const load = async () => {
       try {
         const [pRes, fRes] = await Promise.all([
-          fetch(`/api/v1/children/${id}`, { credentials: 'include' }),
-          fetch(`/api/v1/feedback/child/${id}`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/children/${id}`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/feedback/child/${id}`, { credentials: 'include' }),
         ])
         const [pData, fData] = await Promise.all([pRes.json(), fRes.json()])
         setPatient(pData)

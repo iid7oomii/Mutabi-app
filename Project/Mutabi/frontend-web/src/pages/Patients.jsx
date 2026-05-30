@@ -1,5 +1,5 @@
-// src/pages/Patients.jsx
 import { useState, useEffect } from 'react'
+import { API_BASE_URL } from '../config';
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import useAuthStore from '../store/authStore'
@@ -80,8 +80,8 @@ export default function Patients() {
   const fetchRequests = () => {
     setReqLoading(true)
     Promise.all([
-      fetch('/api/v1/children/requests', { credentials: 'include' }).then(r => r.json()),
-      fetch('/api/v1/users/?role=Doctor', { credentials: 'include' }).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/v1/children/requests`, { credentials: 'include' }).then(r => r.json()),
+      fetch(`${API_BASE_URL}/api/v1/users/?role=Doctor`, { credentials: 'include' }).then(r => r.json()),
     ]).then(([reqs, docs]) => {
       setRequests(Array.isArray(reqs) ? reqs : [])
       setDoctors(Array.isArray(docs) ? docs : [])
@@ -93,7 +93,7 @@ export default function Patients() {
     setApproving(true)
     setApproveError('')
     try {
-      const res = await fetch(`/api/v1/children/requests/${approveModal.id}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/children/requests/${approveModal.id}/approve`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -103,7 +103,7 @@ export default function Patients() {
         setRequests(prev => prev.filter(r => r.id !== approveModal.id))
         setApproveModal(null)
         setSelectedDoc('')
-        fetch('/api/v1/children', { credentials: 'include' })
+        fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' })
           .then(r => r.json()).then(data => setPatients(Array.isArray(data) ? data : []))
       } else {
         const data = await res.json()
@@ -116,7 +116,7 @@ export default function Patients() {
   const handleReject = async () => {
     setRejecting(true)
     try {
-      const res = await fetch(`/api/v1/children/requests/${rejectModal.id}/reject`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/children/requests/${rejectModal.id}/reject`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -135,7 +135,7 @@ export default function Patients() {
     setDeleting(true)
     setDeleteError(null)
     try {
-      const res = await fetch(`/api/v1/children/${confirmDelete.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/children/${confirmDelete.id}`, {
         method: 'DELETE',
         credentials: 'include',
       })
@@ -163,7 +163,7 @@ export default function Patients() {
     setAssigning(true)
     setAssignError('')
     try {
-      const res = await fetch(`/api/v1/children/${assignModal.id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/children/${assignModal.id}`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -174,7 +174,7 @@ export default function Patients() {
         setPatients(prev => prev.map(p => p.id === assignModal.id ? { ...p, doctor: { name: updated.doctor_name || '' } } : p))
         setAssignModal(null)
         setAssignDoc('')
-        fetch('/api/v1/children', { credentials: 'include' }).then(r => r.json()).then(data => setPatients(Array.isArray(data) ? data : []))
+        fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' }).then(r => r.json()).then(data => setPatients(Array.isArray(data) ? data : []))
       } else {
         const data = await res.json()
         setAssignError(data.error || 'Failed to assign doctor')
@@ -184,13 +184,13 @@ export default function Patients() {
   }
 
   useEffect(() => {
-    fetch('/api/v1/children', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setPatients(Array.isArray(data) ? data : []))
       .catch(console.error)
       .finally(() => setLoading(false))
     if (isAdmin) {
-      fetch('/api/v1/users/?role=Doctor', { credentials: 'include' })
+      fetch(`${API_BASE_URL}/api/v1/users/?role=Doctor`, { credentials: 'include' })
         .then(r => r.json()).then(data => setDoctors(Array.isArray(data) ? data : [])).catch(() => {})
     }
   }, [])

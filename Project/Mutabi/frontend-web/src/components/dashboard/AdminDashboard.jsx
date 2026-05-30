@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { API_BASE_URL } from '../../config';
 import useAuthStore from '../../store/authStore'
 
 const AVATAR_COLORS = [
@@ -56,7 +57,7 @@ export default function AdminDashboard() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    fetch('/api/v1/dashboard/admin', { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/dashboard/admin`, { credentials: 'include' })
       .then(r => {
         if (!r.ok) throw new Error('Failed to load dashboard')
         return r.json()

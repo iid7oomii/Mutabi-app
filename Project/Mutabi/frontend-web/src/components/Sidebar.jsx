@@ -1,5 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useRef, useState } from 'react'
+import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
 
 const navItems = [
@@ -93,7 +94,7 @@ export default function Sidebar() {
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const res = await fetch('/api/v1/upload/clinic-logo', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/upload/clinic-logo`, {
         method: 'POST',
         credentials: 'include',
         body: fd,
@@ -137,7 +138,7 @@ export default function Sidebar() {
       if (isDoctor && profileForm.specialty?.trim()) {
         body.specialty = profileForm.specialty.trim()
       }
-      const res = await fetch('/api/v1/users/me', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/users/me`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -181,7 +182,7 @@ export default function Sidebar() {
     }
     setSavingClinic(true)
     try {
-      const res = await fetch('/api/v1/users/clinic/me', {
+      const res = await fetch(`${API_BASE_URL}/api/v1/users/clinic/me`, {
         method: 'PUT',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -211,7 +212,7 @@ export default function Sidebar() {
   }
 
   const handleLogout = async () => {
-    await fetch('/api/v1/auth/logout', {
+    await fetch(`${API_BASE_URL}/api/v1/auth/logout`, {
       method: 'POST',
       credentials: 'include',
     })

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { ChevronRightIcon } from '../components/Icons'
+import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
 
 const AVATAR_COLORS = [
@@ -55,7 +56,7 @@ export default function DoctorProfile() {
     try {
       const fd = new FormData()
       fd.append('file', file)
-      const res = await fetch(`/api/v1/upload/avatar/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/upload/avatar/${id}`, {
         method: 'POST',
         credentials: 'include',
         body: fd,
@@ -76,8 +77,8 @@ export default function DoctorProfile() {
     const load = async () => {
       try {
         const [dRes, pRes] = await Promise.all([
-          fetch(`/api/v1/users/${id}`, { credentials: 'include' }),
-          fetch(`/api/v1/users/${id}/patients`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/users/${id}`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/v1/users/${id}/patients`, { credentials: 'include' }),
         ])
         const [dData, pData] = await Promise.all([dRes.json(), pRes.json()])
         setDoctor(dData)
