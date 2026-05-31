@@ -16,15 +16,30 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    
     CORS(app, 
-    supports_credentials=True,
-    origins=["http://localhost:5173", "http://localhost:5174", "https://mutabi.app", "https://www.mutabi.app"],
-    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type", "Authorization"]
-)
+        supports_credentials=True,
+        origins=[
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "https://mutabi.app",
+            "https://www.mutabi.app",
+        ],
+        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+        allow_headers=["Content-Type", "Authorization"]
+    )
+
+    @app.before_request
+    def handle_options():
+        from flask import request, make_response
+        if request.method == "OPTIONS":
+            response = make_response()
+            response.status_code = 200
+            return response
+
     from app.api.v1 import api_v1
     app.register_blueprint(api_v1)
 
-    from app.models import Exercises_Feedback, Plan_Exercises, Therapy_plans, Doctor_Notes,  User, Children, Clinics, Appointments, Exercises, ChildRequest
+    from app.models import Exercises_Feedback, Plan_Exercises, Therapy_plans, Doctor_Notes, User, Children, Clinics, Appointments, Exercises, ChildRequest
 
     return app
