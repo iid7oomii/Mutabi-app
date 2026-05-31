@@ -19,6 +19,7 @@ def create_app():
     CORS(app, supports_credentials=True, origins=[
         "http://localhost:5173",
         "http://localhost:5174",
+        "https://mutabi.app"
       ])
     from app.api.v1 import api_v1
     app.register_blueprint(api_v1)
