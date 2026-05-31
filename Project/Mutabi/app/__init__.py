@@ -16,11 +16,12 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app, supports_credentials=True, origins=[
-        "http://localhost:5173",
-        "http://localhost:5174",
-        "https://mutabi.app"
-      ])
+    CORS(app, 
+    supports_credentials=True,
+    origins=["http://localhost:5173", "http://localhost:5174", "https://mutabi.app", "https://www.mutabi.app"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allow_headers=["Content-Type", "Authorization"]
+)
     from app.api.v1 import api_v1
     app.register_blueprint(api_v1)
 
