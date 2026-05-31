@@ -33,8 +33,13 @@ def create_app():
     def handle_options():
         from flask import request, make_response
         if request.method == "OPTIONS":
+            origin = request.headers.get("Origin", "")
             response = make_response()
-            response.status_code = 200
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+            response.headers["Access-Control-Max-Age"] = "86400"
             return response
 
     from app.api.v1 import api_v1
