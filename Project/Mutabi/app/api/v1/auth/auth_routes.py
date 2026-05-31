@@ -92,7 +92,7 @@ def admin_signup():
             result["token"],
             httponly=True,
             secure=True,
-            samesite='Strict',
+            samesite='None',
             max_age=86400
         )
         return response
@@ -159,7 +159,7 @@ def login():
             result["token"],
             httponly=True,
             secure=True,
-            samesite='Strict',
+            samesite='None',
             max_age=86400 
         )
         return response
@@ -366,7 +366,7 @@ def parent_signup():
             result["token"],
             httponly=True,
             secure=True,
-            samesite='Strict',
+            samesite='None',
             max_age=86400
         )
         return response
