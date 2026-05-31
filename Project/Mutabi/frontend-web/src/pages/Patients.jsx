@@ -103,7 +103,7 @@ export default function Patients() {
         setRequests(prev => prev.filter(r => r.id !== approveModal.id))
         setApproveModal(null)
         setSelectedDoc('')
-        fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' })
+        fetch(`${API_BASE_URL}/api/v1/children/`, { credentials: 'include' })
           .then(r => r.json()).then(data => setPatients(Array.isArray(data) ? data : []))
       } else {
         const data = await res.json()
@@ -174,7 +174,7 @@ export default function Patients() {
         setPatients(prev => prev.map(p => p.id === assignModal.id ? { ...p, doctor: { name: updated.doctor_name || '' } } : p))
         setAssignModal(null)
         setAssignDoc('')
-        fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' }).then(r => r.json()).then(data => setPatients(Array.isArray(data) ? data : []))
+        fetch(`${API_BASE_URL}/api/v1/children/`, { credentials: 'include' }).then(r => r.json()).then(data => setPatients(Array.isArray(data) ? data : []))
       } else {
         const data = await res.json()
         setAssignError(data.error || 'Failed to assign doctor')
@@ -184,7 +184,7 @@ export default function Patients() {
   }
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/v1/children`, { credentials: 'include' })
+    fetch(`${API_BASE_URL}/api/v1/children/`, { credentials: 'include' })
       .then(r => r.json())
       .then(data => setPatients(Array.isArray(data) ? data : []))
       .catch(console.error)
