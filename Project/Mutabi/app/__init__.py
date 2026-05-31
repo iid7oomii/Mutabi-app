@@ -22,6 +22,7 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
+    app.url_map.strict_slashes = False
 
     @app.before_request
     def handle_preflight():
