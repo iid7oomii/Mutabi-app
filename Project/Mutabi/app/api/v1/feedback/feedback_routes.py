@@ -323,7 +323,12 @@ def get_parent_history():
         if not children:
             return jsonify([]), 200
 
-        child_id = str(children[0].id)
+        child_id_param = request.args.get('child_id')
+        if child_id_param:
+            child = next((c for c in children if str(c.id) == child_id_param), children[0])
+        else:
+            child = children[0]
+        child_id = str(child.id)
         feedbacks = FeedbackRepository.get_all_by_child(child_id)
 
         result = []

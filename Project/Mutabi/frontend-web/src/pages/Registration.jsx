@@ -4,10 +4,12 @@ import Sidebar from '../components/Sidebar'
 import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
 import { WarningIcon, CheckIcon, ChevronDownIcon } from '../components/Icons'
+import Button from '../components/ui/Button'
 
 const RELATIONSHIPS = ['mother', 'father', 'guardian', 'therapist', 'doctor', 'other']
 
 export default function Registration() {
+  document.title = 'Register Family | Mutabi'
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const isAdmin = user?.role === 'admin'
@@ -292,19 +294,19 @@ export default function Registration() {
 
           {/* Actions */}
           <div className="flex items-center justify-end gap-4 mt-6">
-            <button onClick={handleReset}
+            <Button variant="ghost" onClick={handleReset}
               className="text-sm text-gray-500 hover:text-gray-700 transition font-medium">
               Reset Form
-            </button>
-            <button onClick={handleSubmit} disabled={saving}
+            </Button>
+            <Button onClick={handleSubmit} disabled={saving}
               className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white rounded-xl shadow-sm transition disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+              variant="primary">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               {saving ? 'Registering...' : 'Register Patients'}
-            </button>
+            </Button>
           </div>
 
         </main>

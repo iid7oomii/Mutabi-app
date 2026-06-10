@@ -24,6 +24,10 @@ class UserRepositories:
         return db.session.query(Users).filter_by(role=role).all()
 
     @staticmethod
+    def get_by_clinic_and_role(clinic_id: str, role: RoleUser) -> List[Users]:
+        return db.session.query(Users).filter_by(clinic_id=clinic_id, role=role).all()
+
+    @staticmethod
     def get_by_clinic(clinic_id: str) -> List[Users]:
         return db.session.query(Users).filter_by(clinic_id=clinic_id).all()
 

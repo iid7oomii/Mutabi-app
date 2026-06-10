@@ -11,7 +11,7 @@ class UserFacade:
                 role_enum = RoleUser(role.lower())
             except ValueError:
                 raise ValueError(f"Invalid role: {role}")
-            return UserRepositories.get_by_role(role_enum)
+            return UserRepositories.get_by_clinic_and_role(clinic_id, role_enum)
         return UserRepositories.get_by_clinic(clinic_id)
 
     @staticmethod

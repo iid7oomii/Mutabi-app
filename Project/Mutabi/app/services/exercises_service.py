@@ -9,8 +9,9 @@ from app.repositories.children_repository import ChildrenRepository
 class ExercisesService:
 
     @staticmethod
-    def create(data: dict) -> dict:
+    def create(data: dict, clinic_id: str = None) -> dict:
         exercise = ExercisesRepository.create({
+            "clinic_id": clinic_id,
             "title": data["title"],
             "description": data["description"],
             "doctor_media_url": data.get("doctor_media_url"),
@@ -22,8 +23,8 @@ class ExercisesService:
         return exercise.to_dict()
 
     @staticmethod
-    def get_all() -> list:
-        return [e.to_dict() for e in ExercisesRepository.get_all()]
+    def get_all(clinic_id: str = None) -> list:
+        return [e.to_dict() for e in ExercisesRepository.get_all(clinic_id)]
 
     @staticmethod
     def get_by_id(exercise_id: str) -> dict:

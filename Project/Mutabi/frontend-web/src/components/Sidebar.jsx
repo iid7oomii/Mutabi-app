@@ -47,6 +47,10 @@ const adminItems = [
     label: 'Doctors', path: '/doctors',
     icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
   },
+  {
+    label: 'Subscription', path: '/subscription',
+    icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+  },
 ]
 
 const CameraIcon = () => (
@@ -67,7 +71,7 @@ const PencilIcon = () => (
 const inputCls = "w-full border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition"
 
 export default function Sidebar() {
-  const { user, clearUser, setUser } = useAuthStore()
+  const { user, clearUser, setUser, subscription } = useAuthStore()
   const navigate = useNavigate()
   const logoInputRef = useRef(null)
   const [uploadingLogo, setUploadingLogo] = useState(false)
@@ -220,8 +224,9 @@ export default function Sidebar() {
     navigate('/')
   }
 
+  const isSpecialist = subscription?.plan_type === 'specialist'
   const items = isAdmin
-    ? [...navItems, ...adminItems]
+    ? [...navItems, ...adminItems.filter(i => !(isSpecialist && i.path === '/doctors'))]
     : navItems
 
   return (

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import { API_BASE_URL } from '../config';
 import useAuthStore from '../store/authStore'
+import Button from '../components/ui/Button'
 
 function formatDate(s) {
   if (!s) return '—'
@@ -11,6 +12,7 @@ function formatDate(s) {
 const EMPTY_FORM = { title: '', description: '', article_url: '', image_url: '' }
 
 export default function ArticlesPage() {
+  document.title = 'Articles | Mutabi'
   const { user }  = useAuthStore()
   const canEdit   = user?.role === 'admin' || user?.role === 'doctor'
 
@@ -87,16 +89,16 @@ export default function ArticlesPage() {
               </p>
             </div>
             {canEdit && (
-              <button
+              <Button
                 onClick={() => { setShowForm(v => !v); setError('') }}
                 className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl shadow-sm transition"
-                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                variant="primary"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
                 Add Article
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -162,20 +164,21 @@ export default function ArticlesPage() {
                 <p className="text-red-500 text-xs mt-3 bg-red-50 rounded-lg px-3 py-2">{error}</p>
               )}
               <div className="flex gap-3 mt-5 justify-end">
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => { setShowForm(false); setError(''); setForm(EMPTY_FORM) }}
                   className="px-5 py-2 rounded-xl text-sm font-semibold text-gray-500 hover:bg-gray-50 border border-gray-200 transition"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={handleAdd}
                   disabled={saving}
                   className="px-6 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition"
-                  style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                  variant="primary"
                 >
                   {saving ? 'Publishing...' : 'Publish Article'}
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -215,12 +218,13 @@ export default function ArticlesPage() {
                 {articles.length === 0 ? 'No articles published yet' : 'No articles match your search'}
               </p>
               {articles.length === 0 && canEdit && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setShowForm(true)}
                   className="text-sm font-semibold text-blue-600 hover:underline mt-1"
                 >
                   Add your first article
-                </button>
+                </Button>
               )}
             </div>
           ) : (
@@ -269,7 +273,8 @@ export default function ArticlesPage() {
                           Read Article →
                         </a>
                         {user?.role === 'admin' && (
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={() => handleDelete(article.id)}
                             className="text-gray-300 hover:text-red-400 transition-colors"
                           >
@@ -277,7 +282,7 @@ export default function ArticlesPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </div>

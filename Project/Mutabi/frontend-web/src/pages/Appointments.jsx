@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
+import Button from '../components/ui/Button'
 
 const AVATAR_COLORS = ['#4ECDC4','#45B7D1','#96C93D','#F7A072','#9B59B6','#3498DB','#E67E22','#1ABC9C']
 const avatarColor = name => AVATAR_COLORS[(name || 'X').charCodeAt(0) % AVATAR_COLORS.length]
@@ -18,6 +19,7 @@ function isPast(dateStr) {
 }
 
 export default function Appointments() {
+  document.title = 'Appointments | Mutabi'
   const [children, setChildren] = useState([])
   const [selected, setSelected] = useState(null)
   const [appts, setAppts]       = useState([])
@@ -121,7 +123,8 @@ export default function Appointments() {
               const name   = `${child.first_name} ${child.second_name}`
               const active = selected?.id === child.id
               return (
-                <button
+                <Button
+                  variant="ghost"
                   key={child.id}
                   onClick={() => setSelected(child)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
@@ -140,7 +143,7 @@ export default function Appointments() {
                     </p>
                     <p className="text-xs text-gray-400">Patient</p>
                   </div>
-                </button>
+                </Button>
               )
             })}
             {filtered.length === 0 && (
@@ -206,14 +209,14 @@ export default function Appointments() {
                         placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 transition"
                     />
                   </div>
-                  <button
+                  <Button
                     onClick={handleAdd}
                     disabled={saving || !date}
                     className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition disabled:opacity-50 flex-shrink-0"
-                    style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                    variant="primary"
                   >
                     {saving ? 'Saving...' : 'Schedule'}
-                  </button>
+                  </Button>
                 </div>
                 {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
               </div>
@@ -303,7 +306,8 @@ function AppointmentRow({ appt, past, onDelete }) {
         }`}>
           {past ? 'Completed' : 'Upcoming'}
         </span>
-        <button
+        <Button
+          variant="ghost"
           onClick={() => onDelete(appt.id)}
           className="text-gray-300 hover:text-red-400 transition-colors p-1"
         >
@@ -311,7 +315,7 @@ function AppointmentRow({ appt, past, onDelete }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
           </svg>
-        </button>
+        </Button>
       </div>
     </div>
   )

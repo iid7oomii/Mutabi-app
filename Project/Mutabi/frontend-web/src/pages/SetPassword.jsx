@@ -20,6 +20,7 @@ const EyeIcon = ({ show }) => show ? (
 )
 
 export default function SetPassword() {
+	document.title = 'Set Password | Mutabi'
 	const navigate = useNavigate()
 	const [tempPassword, setTempPassword] = useState('')
 	const [newPassword, setNewPassword] = useState('')

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View, Text, ScrollView, FlatList, TouchableOpacity,
   StyleSheet, ActivityIndicator, Image, Linking, Dimensions, Modal, Pressable,
@@ -8,8 +8,7 @@ import { Ionicons, FontAwesome, FontAwesome6 } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import Header from '../components/Header'
 import { apiGet, getLocalSessions, todayString, localDayName } from '../utils/api'
-import { useFocusEffect } from '@react-navigation/native'
-import { useCallback } from 'react'
+import { useChild } from '../contexts/ChildContext'
 
 const BLUE    = '#1F6FEB'
 const ORANGE  = '#FF7A00'
@@ -24,6 +23,7 @@ function greeting() {
 
 export default function HomeScreen({ onTabPress }) {
   const navigation = useNavigation()
+  const { selectedChildId, ready } = useChild()
   const [data, setData]           = useState(null)
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState('')
@@ -31,10 +31,11 @@ export default function HomeScreen({ onTabPress }) {
   const [apptModal, setApptModal] = useState(false)
   const [completedIds, setCompletedIds] = useState([])
 
-  const fetchData = async () => {
+  const fetchData = async (childId) => {
     try {
+      const childParam = childId ? `&child_id=${childId}` : ''
       const [dashRes, artRes, sessions] = await Promise.all([
-        apiGet(`/dashboard/parent?day=${localDayName()}`),
+        apiGet(`/dashboard/parent?day=${localDayName()}${childParam}`),
         apiGet('/articles/'),
         getLocalSessions(),
       ])
@@ -55,13 +56,12 @@ export default function HomeScreen({ onTabPress }) {
     }
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true)
-      setError('')
-      fetchData()
-    }, [])
-  )
+  useEffect(() => {
+    if (!ready) return
+    setLoading(true)
+    setError('')
+    fetchData(selectedChildId)
+  }, [selectedChildId, ready])
 
   if (loading) return (
     <View style={styles.center}>

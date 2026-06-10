@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import Header from '../components/Header'
 import { apiGet } from '../utils/api'
+import { useChild } from '../contexts/ChildContext'
 
 const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
@@ -175,26 +176,20 @@ const chartStyles = StyleSheet.create({
 
 export default function ProgressScreen({ activeTab }) {
   const navigation                  = useNavigation()
+  const { selectedChildId, ready }  = useChild()
   const [filter, setFilter]         = useState('هذا الأسبوع')
   const [sessions, setSessions]     = useState([])
   const [clinicName, setClinicName] = useState('')
   const [loading, setLoading]       = useState(true)
   const [selectedBar, setSelectedBar] = useState(null)
 
-  useEffect(() => { loadData() }, [])
-
-  useEffect(() => {
-    if (activeTab === 'Progress') loadData()
-  }, [activeTab])
-
-  useEffect(() => { setSelectedBar(null) }, [filter])
-
-  const loadData = async () => {
+  const loadData = async (childId) => {
     setLoading(true)
     try {
+      const childParam = childId ? `?child_id=${childId}` : ''
       const [historyRes, dashRes] = await Promise.all([
-        apiGet('/feedback/parent/history'),
-        apiGet('/dashboard/parent'),
+        apiGet(`/feedback/parent/history${childParam}`),
+        apiGet(`/dashboard/parent${childParam}`),
       ])
       const [history, dash] = await Promise.all([historyRes.json(), dashRes.json()])
       if (historyRes.ok) setSessions(Array.isArray(history) ? history : [])
@@ -204,6 +199,13 @@ export default function ProgressScreen({ activeTab }) {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (!ready) return
+    loadData(selectedChildId)
+  }, [selectedChildId, ready])
+
+  useEffect(() => { setSelectedBar(null) }, [filter])
 
   const { bars, highlightIdx } = buildChartData(sessions, filter)
   const streak    = calcStreak(sessions)

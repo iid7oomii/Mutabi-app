@@ -4,6 +4,7 @@ import DoctorDashboard from '../components/dashboard/DoctorDashboard'
 import useAuthStore from '../store/authStore'
 
 export default function Dashboard() {
+  document.title = 'Dashboard | Mutabi'
   const { user } = useAuthStore()
 
   return (

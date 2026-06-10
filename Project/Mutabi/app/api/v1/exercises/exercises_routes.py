@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from app.services.exercises_service import ExercisesService
 from app.api.v1.middleware.role_required import role_required
 
@@ -8,43 +8,10 @@ exercises_bp = Blueprint("exercises", __name__, url_prefix="/exercises")
 @exercises_bp.route("/", methods=["POST"])
 @role_required("Admin", "Doctor")
 def create_exercise():
-    """
-    Create Exercise
-    ---
-    tags:
-      - Exercises
-    consumes:
-      - application/json
-    security:
-      - Bearer: []
-    parameters:
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - title
-            - description
-          properties:
-            title:
-              type: string
-              example: "Sensory Brushing"
-            description:
-              type: string
-              example: "وصف التمرين"
-            doctor_media_url:
-              type: string
-              example: "https://bucket.amazonaws.com/video.mp4"
-    responses:
-      201:
-        description: تم إنشاء التمرين بنجاح
-      400:
-        description: خطأ في البيانات
-    """
     try:
         data = request.get_json()
-        result = ExercisesService.create(data)
+        clinic_id = g.jwt_claims.get("clinic_id")
+        result = ExercisesService.create(data, clinic_id=clinic_id)
         return jsonify(result), 201
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -53,21 +20,9 @@ def create_exercise():
 @exercises_bp.route("/", methods=["GET"])
 @role_required("Admin", "Doctor")
 def get_exercises():
-    """
-    Get Exercises
-    ---
-    tags:
-      - Exercises
-    consumes:
-      - application/json
-    security:
-      - Bearer: []
-    responses:
-      200:
-        description: قائمة التمارين
-    """
     try:
-        result = ExercisesService.get_all()
+        clinic_id = g.jwt_claims.get("clinic_id")
+        result = ExercisesService.get_all(clinic_id=clinic_id)
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400

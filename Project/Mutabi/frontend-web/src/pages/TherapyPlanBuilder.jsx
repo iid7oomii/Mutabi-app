@@ -1,3 +1,4 @@
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import { WarningIcon, CheckIcon } from '../components/Icons'
@@ -6,8 +7,10 @@ import ExerciseList from '../components/therapy/ExerciseList'
 import ExerciseLibrary from '../components/therapy/ExerciseLibrary'
 import { API_BASE_URL } from '../config';
 import useTherapyPlan from '../hooks/useTherapyPlan'
+import Button from '../components/ui/Button'
 
 export default function TherapyPlanBuilder() {
+  document.title = 'Therapy Plan Builder | Mutabi'
   const navigate = useNavigate()
   const {
     form, setForm,
@@ -23,11 +26,20 @@ export default function TherapyPlanBuilder() {
     updateDuration
   } = useTherapyPlan()
 
+  const [invalidExerciseIds, setInvalidExerciseIds] = React.useState([])
+
     const handleActivate = async () => {
         setError(null)
+        setInvalidExerciseIds([])
         if (!form.patient_id) return setError('Please select a patient.')
         if (!form.title.trim()) return setError('Please enter a plan title.')
         if (selected.length === 0) return setError('Add at least one exercise from the library.')
+
+        const missing = selected.filter(({ reps, duration_minutes }) => !reps && !duration_minutes)
+        if (missing.length > 0) {
+          setInvalidExerciseIds(missing.map(({ exercise }) => exercise.id))
+          return setError(`Each exercise needs reps or duration: ${missing.map(({ exercise }) => exercise.title).join(', ')}`)
+        }
 
         setSaving(true)
         try {
@@ -103,11 +115,11 @@ export default function TherapyPlanBuilder() {
               <h1 className="text-2xl font-bold text-gray-800">Therapy Plan Builder</h1>
               <p className="text-sm text-gray-400 mt-1">Create or update a structured plan for your patient.</p>
             </div>
-            <button onClick={handleActivate} disabled={saving}
+            <Button onClick={handleActivate} disabled={saving}
               className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition shadow-sm disabled:opacity-60"
-              style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+              variant="primary">
               {saving ? 'Saving…' : 'Activate Plan'}
-            </button>
+            </Button>
           </div>
 
           {error && (
@@ -124,13 +136,14 @@ export default function TherapyPlanBuilder() {
           <div className="flex gap-6 items-start">
             <div className="flex-1 space-y-5 min-w-0">
               <PlanForm form={form} setForm={setForm} patients={patients} doctors={doctors} isAdmin={isAdmin} />
-              <ExerciseList 
-                selected={selected} 
-                removeExercise={removeExercise} 
+              <ExerciseList
+                selected={selected}
+                removeExercise={removeExercise}
                 updateDay={updateDay}
-                updateReps={updateReps}
-                updateDuration={updateDuration}
-                />
+                updateReps={(id, val) => { setInvalidExerciseIds(p => p.filter(x => x !== id)); updateReps(id, val) }}
+                updateDuration={(id, val) => { setInvalidExerciseIds(p => p.filter(x => x !== id)); updateDuration(id, val) }}
+                invalidIds={invalidExerciseIds}
+              />
             </div>
             <ExerciseLibrary exercises={exercises} loadingData={loadingData} isAdded={isAdded} addExercise={addExercise} />
           </div>

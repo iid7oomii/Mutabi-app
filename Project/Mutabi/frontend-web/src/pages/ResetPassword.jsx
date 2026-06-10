@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../config';
 import logo from '../assets/logo-mark.svg'
 
 export default function ResetPassword() {
+  document.title = 'Reset Password | Mutabi'
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token') || ''

@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import useAuthStore from './store/authStore'
 import Login from './pages/Login'
-import Signup from './pages/Signup'
 import Dashboard from './pages/Dashboard'
 import Patients from './pages/Patients'
 import PatientProfile from './pages/PatientProfile'
@@ -20,11 +19,18 @@ import ArticlesPage from './pages/ArticlesPage'
 import SetPassword from './pages/SetPassword'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
+import LandingPage from './pages/LandingPage'
+import PricingPage from './pages/PricingPage'
+import SubscriptionCallback from './pages/SubscriptionCallback'
+import Signup from './pages/Signup'
+import MutabiAdmin from './pages/MutabiAdmin'
 import './App.css'
 
 
+const SUBSCRIPTION_EXEMPT = ['/subscription', '/subscription/callback']
+
 function ProtectedRoute({ children }) {
-  const { user, loading } = useAuthStore()
+  const { user, loading, subscription } = useAuthStore()
   const location = useLocation()
 
   if (loading) return (
@@ -33,25 +39,45 @@ function ProtectedRoute({ children }) {
     </div>
   )
 
-  if (!user) return <Navigate to="/" replace />
+  if (!user) return <Navigate to="/login" replace />
 
   if (!user.active && location.pathname !== '/set_password')
     return <Navigate to="/set_password" replace />
+
+  // SUBSCRIPTION CHECK DISABLED
+  // if (
+  //   user.role === 'admin' &&
+  //   !SUBSCRIPTION_EXEMPT.includes(location.pathname) &&
+  //   subscription !== null &&
+  //   !['trial', 'active'].includes(subscription?.status)
+  // ) {
+  //   return <Navigate to="/subscription" replace />
+  // }
 
   return children
 }
 
 function AdminRoute({ children }) {
-  const { user, loading } = useAuthStore()
+  const { user, loading, subscription } = useAuthStore()
   const location = useLocation()
-  
-  if (loading) return null
-  if (!user) return <Navigate to="/" />
 
-	if (!user.active && location.pathname !== '/set_password')
-	return <Navigate to="/set_password" replace />
+  if (loading) return null
+  if (!user) return <Navigate to="/login" />
+
+  if (!user.active && location.pathname !== '/set_password')
+    return <Navigate to="/set_password" replace />
 
   if (user.role !== 'admin') return <Navigate to="/dashboard" />
+
+  // SUBSCRIPTION CHECK DISABLED
+  // if (
+  //   !SUBSCRIPTION_EXEMPT.includes(location.pathname) &&
+  //   subscription !== null &&
+  //   !['trial', 'active'].includes(subscription?.status)
+  // ) {
+  //   return <Navigate to="/subscription" replace />
+  // }
+
   return children
 }
 
@@ -64,7 +90,8 @@ function App() {
 
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 	
@@ -150,6 +177,15 @@ function App() {
 
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                <Route path="/subscription" element={
+                  <ProtectedRoute><PricingPage /></ProtectedRoute>
+                } />
+                <Route path="/subscription/callback" element={
+                  <ProtectedRoute><SubscriptionCallback /></ProtectedRoute>
+                } />
+
+                <Route path="/mutabi-admin" element={<MutabiAdmin />} />
     </Routes>
     
   )

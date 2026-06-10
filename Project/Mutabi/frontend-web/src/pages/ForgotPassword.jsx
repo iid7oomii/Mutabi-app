@@ -4,6 +4,7 @@ import { API_BASE_URL } from '../config';
 import logo from '../assets/logo-mark.svg'
 
 export default function ForgotPassword() {
+  document.title = 'Forgot Password | Mutabi'
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)

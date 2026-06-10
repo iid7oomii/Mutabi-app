@@ -41,6 +41,7 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
 
 export default function ProgressReview() {
+  document.title = 'Progress Review | Mutabi'
   const { id } = useParams()
   const navigate = useNavigate()
   const [patient, setPatient] = useState(null)

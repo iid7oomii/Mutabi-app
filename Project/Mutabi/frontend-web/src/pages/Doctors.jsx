@@ -3,6 +3,7 @@ import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
 import { useNavigate } from 'react-router-dom'
 import { WarningIcon, CloseIcon, TrashIcon } from '../components/Icons'
+import Button from '../components/ui/Button'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -14,6 +15,7 @@ const STATUS_FILTERS = ['All Status', 'Active', 'Inactive']
 
 
 export default function Doctors() {
+  document.title = 'Doctors | Mutabi'
   const [doctors, setDoctors] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState('All Status')
@@ -124,12 +126,12 @@ export default function Doctors() {
               <h1 className="text-2xl font-bold text-gray-800">Doctors Directory</h1>
               <p className="text-sm text-gray-400 mt-1">Manage doctor profiles, specialties, and system access.</p>
             </div>
-            <button onClick={() => { setShowModal(true); setTempPassword(null); setError(null) }}
+            <Button onClick={() => { setShowModal(true); setTempPassword(null); setError(null) }}
               className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl shadow-sm transition"
-              style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+              variant="primary">
               <span className="text-lg leading-none">+</span>
               Add Doctor
-            </button>
+            </Button>
           </div>
 
           {/* Table */}
@@ -138,7 +140,8 @@ export default function Doctors() {
             {/* Filters */}
             <div className="flex items-center gap-1 px-6 py-4 border-b border-gray-100">
               {STATUS_FILTERS.map(f => (
-                <button key={f} onClick={() => setStatusFilter(f)}
+                <Button key={f} onClick={() => setStatusFilter(f)}
+                  variant="ghost"
                   className={`px-4 py-1.5 rounded-lg text-sm font-medium transition ${
                     statusFilter === f
                       ? 'text-white shadow-sm'
@@ -146,7 +149,7 @@ export default function Doctors() {
                   }`}
                   style={statusFilter === f ? { background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' } : {}}>
                   {f}
-                </button>
+                </Button>
               ))}
             </div>
 
@@ -201,12 +204,14 @@ export default function Doctors() {
                     </td>
                     <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); navigate(`/doctors/${d.id}`) }}
                             className="text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition">
                             View Profile
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); handleToggleStatus(d) }}
                             className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition ${
                               d.is_active
@@ -214,12 +219,13 @@ export default function Doctors() {
                                 : 'border-green-200 text-green-600 hover:bg-green-50'
                             }`}>
                             {d.is_active ? 'Deactivate' : 'Activate'}
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); setConfirmDelete({ id: d.id, name: `Dr. ${fullName}` }) }}
                             className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition">
                             <TrashIcon className="w-3.5 h-3.5" />
-                          </button>
+                          </Button>
                         </div>
                     </td>
                     </tr>
@@ -247,10 +253,10 @@ export default function Doctors() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-gray-800">Add New Doctor</h2>
-              <button onClick={() => { setShowModal(false); setTempPassword(null); setError(null) }}
+              <Button variant="ghost" onClick={() => { setShowModal(false); setTempPassword(null); setError(null) }}
                 className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition">
                 <CloseIcon className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
 
             {tempPassword ? (
@@ -266,12 +272,12 @@ export default function Doctors() {
                   {tempPassword}
                 </div>
                 <p className="text-xs text-gray-400 mt-3">The doctor should change this password upon first login.</p>
-                <button
+                <Button
                   onClick={() => { setShowModal(false); setTempPassword(null) }}
                   className="mt-5 px-6 py-2.5 text-sm font-semibold text-white rounded-xl transition"
-                  style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+                  variant="primary">
                   Done
-                </button>
+                </Button>
               </div>
             ) : (
               <>
@@ -310,15 +316,15 @@ export default function Doctors() {
                   </div>
                 </div>
                 <div className="flex items-center justify-end gap-3 mt-6">
-                  <button onClick={() => { setShowModal(false); setError(null) }}
+                  <Button variant="ghost" onClick={() => { setShowModal(false); setError(null) }}
                     className="text-sm text-gray-500 hover:text-gray-700 transition font-medium">
                     Cancel
-                  </button>
-                  <button onClick={handleSubmit} disabled={saving}
+                  </Button>
+                  <Button onClick={handleSubmit} disabled={saving}
                     className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                    style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+                    variant="primary">
                     {saving ? 'Adding...' : 'Add Doctor'}
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
@@ -341,18 +347,19 @@ export default function Doctors() {
               <p className="text-xs text-red-500 text-center bg-red-50 rounded-lg px-3 py-2 mb-4">{deleteError}</p>
             )}
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => { setConfirmDelete(null); setDeleteError(null) }}
                 className="flex-1 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}>
+                variant="danger">
                 {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

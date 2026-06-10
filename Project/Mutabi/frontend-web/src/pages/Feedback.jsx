@@ -54,6 +54,7 @@ function formatDateTime(dateStr) {
 }
 
 export default function Feedback() {
+  document.title = 'Feedback | Mutabi'
   const navigate = useNavigate()
   const location = useLocation()
   const highlightId = location.state?.highlightId

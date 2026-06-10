@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, ActivityIndicator, Alert, Image,
@@ -10,47 +10,69 @@ import * as ImagePicker from 'expo-image-picker'
 import Header from '../components/Header'
 import { apiGet } from '../utils/api'
 import { API_BASE } from '../config'
-import { useFocusEffect } from '@react-navigation/native'
-import { useCallback } from 'react'
+import { useChild } from '../contexts/ChildContext'
 
 const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
 
 export default function ProfileScreen() {
   const navigation = useNavigation()
-  const [user, setUser]           = useState(null)
-  const [dashboard, setDashboard] = useState(null)
-  const [loading, setLoading]     = useState(true)
-  const [error, setError] = useState('')
+  const { selectedChildId, switchChild, clearChild, ready } = useChild()
+  const [user, setUser]                   = useState(null)
+  const [dashboard, setDashboard]         = useState(null)
+  const [loading, setLoading]             = useState(true)
+  const [error, setError]                 = useState('')
   const [profilePicUrl, setProfilePicUrl] = useState(null)
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
-  useFocusEffect(
-    useCallback(() => {
-        setLoading(true)
-        setError('')
-        fetchData()
-    }, [])
-    )
+  useEffect(() => {
+    if (!ready) return
+    setLoading(true)
+    setError('')
+    fetchData(selectedChildId)
+  }, [selectedChildId, ready])
 
-    const fetchData = async () => {
+  const fetchData = async (childId) => {
     try {
-        const res = await apiGet('/dashboard/parent')
-        const json = await res.json()
-        if (res.ok) {
-        setUser({
-            first_name: json.parent_name?.split(' ')[0],
-            second_name: json.parent_name?.split(' ').slice(1).join(' '),
-            email: json.email,
-        })
-        setDashboard(json)
-        setProfilePicUrl(json.profile_picture_url || null)
-        }
+      const url = childId ? `/dashboard/parent?child_id=${childId}` : '/dashboard/parent'
+      const res = await apiGet(url)
+      let json
+      try { json = await res.json() } catch { json = {} }
+
+      if (res.status === 401) {
+        await AsyncStorage.removeItem('token')
+        await clearChild()
+        navigation.reset({ index: 0, routes: [{ name: 'Login' }] })
+        return
+      }
+
+      if (!res.ok) {
+        setError(json.error || 'فشل تحميل البيانات')
+        return
+      }
+
+      setUser({
+        first_name: json.parent_name?.split(' ')[0],
+        second_name: json.parent_name?.split(' ').slice(1).join(' '),
+        email: json.email,
+      })
+      setDashboard(json)
+      setProfilePicUrl(json.profile_picture_url || null)
+      if (!childId && json.children?.length > 0) {
+        await switchChild(json.children[0].id)
+      }
     } catch {
+      setError('تعذر الاتصال بالخادم')
     } finally {
-        setLoading(false)
+      setLoading(false)
     }
-    }
+  }
+
+  const handleChildSwitch = async (childId) => {
+    const id = String(childId)
+    if (id === String(selectedChildId)) return
+    await switchChild(id)
+  }
 
   const handleAvatarUpload = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
@@ -105,6 +127,7 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.removeItem('token')
+            await clearChild()
             navigation.reset({ index: 0, routes: [{ name: 'Login' }] })
           },
         },
@@ -120,11 +143,27 @@ export default function ProfileScreen() {
     ? `${user.first_name?.[0] || ''}${user.second_name?.[0] || ''}`.toUpperCase()
     : 'U'
 
-  const children = dashboard?.child ? [dashboard.child] : []
+  const children = dashboard?.children || []
+  const selectedChild = children.find(c => String(c.id) === String(selectedChildId)) || children[0] || null
 
   if (loading) return (
     <View style={styles.center}>
       <ActivityIndicator color={BLUE} size="large" />
+    </View>
+  )
+
+  if (!dashboard && !loading) return (
+    <View style={styles.center}>
+      <Ionicons name="cloud-offline-outline" size={48} color="#ccc" />
+      <Text style={{ color: '#888', marginTop: 12, textAlign: 'center', paddingHorizontal: 32 }}>
+        {error || 'تعذر تحميل البيانات'}
+      </Text>
+      <TouchableOpacity
+        onPress={() => { setLoading(true); setError(''); fetchData(selectedChildId) }}
+        style={{ marginTop: 16, paddingHorizontal: 24, paddingVertical: 10, backgroundColor: BLUE, borderRadius: 12 }}
+      >
+        <Text style={{ color: '#fff', fontWeight: '700' }}>إعادة المحاولة</Text>
+      </TouchableOpacity>
     </View>
   )
 
@@ -138,7 +177,6 @@ export default function ProfileScreen() {
 
         {/* Profile Card */}
         <View style={styles.profileCard}>
-          {/* Avatar */}
           <View style={styles.avatarWrap}>
             {profilePicUrl ? (
               <Image source={{ uri: profilePicUrl }} style={styles.avatarImage} />
@@ -166,7 +204,6 @@ export default function ProfileScreen() {
             <Ionicons name="mail-outline" size={14} color="#aaa" />
             <Text style={styles.infoText}>{dashboard?.email || '—'}</Text>
           </View>
-          {/* Phone hidden from /auth/me response, shown if available */}
         </View>
 
         {/* My Children */}
@@ -187,26 +224,56 @@ export default function ProfileScreen() {
             <Text style={styles.emptyText}>لا يوجد أطفال مسجلون بعد</Text>
           </View>
         ) : (
-          children.map((child, i) => (
-            <View key={child.id || i} style={styles.childCard}>
-              <View style={styles.childAvatar}>
-                <Ionicons name="person" size={20} color={BLUE} />
-              </View>
-              <View style={styles.childInfo}>
-                <Text style={styles.childName}>{child.name}</Text>
-                {child.plan_status && (
-                  <Text style={styles.childPlan}>
-                    الخطة: <Text style={{ color: ORANGE }}>{child.plan_status}</Text>
-                  </Text>
-                )}
-              </View>
-              <TouchableOpacity
-                onPress={() => navigation.navigate('EditChild', { child, childId: child.id })}
+          <>
+            {/* Child switcher pills */}
+            {children.length > 1 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.pillsRow}
               >
-                <Ionicons name="pencil-outline" size={18} color="#aaa" />
-              </TouchableOpacity>
-            </View>
-          ))
+                {children.map(child => {
+                  const isActive = String(child.id) === String(selectedChildId || children[0]?.id)
+                  return (
+                    <TouchableOpacity
+                      key={child.id}
+                      style={[styles.pill, isActive && styles.pillActive]}
+                      onPress={() => handleChildSwitch(child.id)}
+                      activeOpacity={0.75}
+                    >
+                      <Text style={[styles.pillText, isActive && styles.pillTextActive]}>
+                        {child.name.split(' ')[0]}
+                      </Text>
+                    </TouchableOpacity>
+                  )
+                })}
+              </ScrollView>
+            )}
+
+            {/* Selected child detail card */}
+            {selectedChild && (
+              <View style={styles.childCard}>
+                <View style={styles.childAvatar}>
+                  <Ionicons name="person" size={20} color={BLUE} />
+                </View>
+                <View style={styles.childInfo}>
+                  <Text style={styles.childName}>{selectedChild.name}</Text>
+                  {dashboard?.active_plan ? (
+                    <Text style={styles.childPlan}>
+                      الخطة: <Text style={{ color: ORANGE }}>{dashboard.active_plan.status}</Text>
+                    </Text>
+                  ) : (
+                    <Text style={styles.childPlan}>لا توجد خطة نشطة</Text>
+                  )}
+                </View>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate('EditChild', { childId: selectedChild.id })}
+                >
+                  <Ionicons name="pencil-outline" size={18} color="#aaa" />
+                </TouchableOpacity>
+              </View>
+            )}
+          </>
         )}
 
         {/* Settings Section */}
@@ -257,6 +324,13 @@ const styles = StyleSheet.create({
   sectionTitle:   { fontSize: 16, fontWeight: '700', color: '#1a1a2e' },
   addChildBtn:    { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: ORANGE, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   addChildText:   { fontSize: 12, color: '#fff', fontWeight: '700' },
+
+  pillsRow:      { gap: 8, paddingBottom: 12, paddingRight: 4 },
+  pill:          { paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20, backgroundColor: '#f0f4ff', borderWidth: 1.5, borderColor: '#dce8ff' },
+  pillActive:    { backgroundColor: BLUE, borderColor: BLUE },
+  pillText:      { fontSize: 14, fontWeight: '600', color: '#555' },
+  pillTextActive:{ color: '#fff' },
+
   childCard:      { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 10, gap: 12, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
   childAvatar:    { width: 44, height: 44, borderRadius: 22, backgroundColor: '#EEF3FA', alignItems: 'center', justifyContent: 'center' },
   childInfo:      { flex: 1 },

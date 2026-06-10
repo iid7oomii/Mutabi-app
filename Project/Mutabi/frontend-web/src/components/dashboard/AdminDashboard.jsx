@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { API_BASE_URL } from '../../config';
 import useAuthStore from '../../store/authStore'
+import Button from '../ui/Button'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -39,19 +40,11 @@ function RegistrationsStatIcon() {
   )
 }
 
-function DotsIcon() {
-  return (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <circle cx="12" cy="5" r="1.5" />
-      <circle cx="12" cy="12" r="1.5" />
-      <circle cx="12" cy="19" r="1.5" />
-    </svg>
-  )
-}
 
 export default function AdminDashboard() {
-  const { user } = useAuthStore()
+  const { user, subscription } = useAuthStore()
   const navigate = useNavigate()
+  const isSpecialist = subscription?.plan_type === 'specialist'
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -116,27 +109,30 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={() => navigate('/doctors')}
-            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition font-medium shadow-sm"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-            </svg>
-            Add Doctor
-          </button>
-          <button
+          {!isSpecialist && (
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/doctors')}
+              className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 font-medium shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+              </svg>
+              Add Doctor
+            </Button>
+          )}
+          <Button
+            variant="primary"
             onClick={() => navigate('/registration')}
-            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg text-white font-medium transition shadow-sm"
-            style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+            className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg shadow-sm"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                 d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
             Add Patients
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -160,16 +156,15 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      {!isSpecialist && <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-800">Recent Doctor Onboarding</h2>
-          <button
+          <Button variant="ghost"
             onClick={() => navigate('/doctors')}
             className="text-xs font-medium hover:underline"
-            style={{ color: '#0F4C81' }}
-          >
+            style={{ color: '#0F4C81' }}>
             View All
-          </button>
+          </Button>
         </div>
 
         <table className="w-full">
@@ -221,15 +216,16 @@ export default function AdminDashboard() {
                   </span>
                 </td>
                 <td className="px-6 py-4">
-                  <button className="w-7 h-7 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition">
-                    <DotsIcon />
-                  </button>
+                  <Button variant="ghost" onClick={() => navigate(`/doctors/${doc.id}`)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-blue-300 hover:text-blue-600 transition">
+                    View Profile
+                  </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
 
     </div>
   )

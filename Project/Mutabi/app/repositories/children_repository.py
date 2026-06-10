@@ -39,6 +39,14 @@ class ChildrenRepository:
         return db.session.query(Children).filter_by(doctor_id=doctor_id).count()
 
     @staticmethod
+    def count_all() -> int:
+        return db.session.query(Children).count()
+
+    @staticmethod
+    def count_by_clinic(clinic_id: str) -> int:
+        return db.session.query(Children).filter_by(clinic_id=clinic_id).count()
+
+    @staticmethod
     def update(child_id: str, data: dict) -> Optional[Children]:
         child = db.session.get(Children, child_id)
         if not child:
