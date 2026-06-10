@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import logo from '../assets/logo-mark.svg';
 import { API_BASE_URL } from '../config';
@@ -29,110 +29,140 @@ const EyeIcon = ({ show }) => show ? (
 )
 
 export default function Login() {
+  document.title = 'Login | Mutabi'
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [noSubscription, setNoSubscription] = useState(false)
 
   const { fetchUser, user } = useAuthStore()
 
-    useEffect(() => {
-    if (user) {
-        if (!user.active) {
-        navigate('/set_password', { replace: true });
-        } else {
-        navigate('/dashboard', { replace: true });
-        }
+  useEffect(() => {
+    if (!user) return
+    // SUBSCRIPTION CHECK DISABLED
+    // const { subscription } = useAuthStore.getState()
+    // if (user.role === 'admin' && !['trial', 'active'].includes(subscription?.status)) {
+    //   return
+    // }
+    if (!user.active) {
+      navigate('/set_password', { replace: true })
+    } else {
+      navigate('/dashboard', { replace: true })
     }
-    }, [user, navigate]);
+  }, [user, navigate])
 
   const handleLogin = async (e) => {
-  e.preventDefault()
-  setLoading(true)
-  setError('')
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    setNoSubscription(false)
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ email, password }),
-    })
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email, password }),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!res.ok) {
-      setError(data.error || 'حدث خطأ')
-      return
+      if (!res.ok) {
+        setError(data.error || 'حدث خطأ')
+        return
+      }
+
+      if (data.role === 'parent') {
+        await fetch(`${API_BASE_URL}/api/v1/auth/logout`, { method: 'POST', credentials: 'include' })
+        setError('حساب ولي الأمر متاح فقط عبر تطبيق الجوال')
+        return
+      }
+
+      await fetchUser()
+      // SUBSCRIPTION CHECK DISABLED
+      // const loggedInUser = await fetchUser()
+      // const { subscription } = useAuthStore.getState()
+      // if (loggedInUser?.role === 'admin' && !['trial', 'active'].includes(subscription?.status)) {
+      //   setNoSubscription(true)
+      //   return
+      // }
+
+    } catch {
+      setError('تعذر الاتصال بالخادم')
+    } finally {
+      setLoading(false)
     }
-
-    if (data.role === 'parent') {
-      await fetch(`${API_BASE_URL}/api/v1/auth/logout`, { method: 'POST', credentials: 'include' })
-      setError('حساب ولي الأمر متاح فقط عبر تطبيق الجوال')
-      return
-    }
-
-    await fetchUser()
-
-  } catch {
-    setError('تعذر الاتصال بالخادم')
-  } finally {
-    setLoading(false)
   }
-}
 
   return (
-    <div className="min-h-screen flex items-center justify-center" dir="rtl">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50" dir="rtl">
+
+      {/* Back to landing */}
+      <button
+        onClick={() => navigate('/')}
+        className="fixed top-5 right-5 flex items-center gap-2 text-sm text-gray-500 hover:text-gray-800 transition-colors"
+      >
+        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+        العودة للرئيسية
+      </button>
+
+      <div className="w-full max-w-md px-4">
 
         {/* Logo */}
-        <div className="text-center mb-10">
-          <img src={logo} alt="Logo"  className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"/>
-          <h1 className="text-3xl font-bold text-gray-800">متابع</h1>
-          <p className="text-gray-400 mt-1 text-sm">منصة متابعة العلاج</p>
+        <div className="text-center mb-8">
+          <img src={logo} alt="Logo" className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-3"/>
+          <h1 className="text-2xl font-bold text-gray-800">متابع</h1>
+          <p className="text-gray-400 mt-1 text-sm">منصة متابعة العلاج الوظيفي</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+        <div className="bg-white rounded-3xl shadow-lg p-8 border border-gray-100">
           <h2 className="text-xl font-bold text-gray-800 mb-6">تسجيل الدخول</h2>
 
-          {error && (
+          {noSubscription && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-4 text-center">
+              <p className="text-orange-800 font-semibold text-sm mb-1">ليس لديك اشتراك نشط</p>
+              <p className="text-orange-600 text-xs mb-3">يجب الاشتراك أولاً للوصول إلى النظام</p>
+              <button
+                onClick={() => navigate('/subscription')}
+                className="bg-orange-500 text-white text-sm px-4 py-2 rounded-lg hover:bg-orange-600 transition font-medium"
+              >
+                اشترك الآن ←
+              </button>
+            </div>
+          )}
+
+          {error && !noSubscription && (
             <div className="bg-red-50 text-red-600 text-sm rounded-xl p-3 mb-4 text-center">
               {error}
             </div>
           )}
 
           <form onSubmit={handleLogin} className="space-y-4">
-
-         <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">
-                    البريد الإلكتروني
-                </label>
-                <div className="relative">
-                    <img 
-                    src={userlogo} 
-                    alt="user" 
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40" 
-                    />
-                    <input    
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@gmail.com"
-                    required
-                    className="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-gray-700 text-sm transition"
-                    />
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-600 mb-1">البريد الإلكتروني</label>
+              <div className="relative">
+                <img src={userlogo} alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40"/>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@email.com"
+                  required
+                  className="w-full pr-10 pl-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 text-gray-700 text-sm transition"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">
-                كلمة المرور
-              </label>
-              <div className='relative'>
-                <img src={passlogo} alt="" className='absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40'/>
+              <label className="block text-sm font-medium text-gray-600 mb-1">كلمة المرور</label>
+              <div className="relative">
+                <img src={passlogo} alt="" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 opacity-40"/>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -151,6 +181,12 @@ export default function Login() {
               </div>
             </div>
 
+            <div className="flex justify-end">
+              <a href="/forgot-password" className="text-sm hover:underline text-blue-600">
+                نسيت كلمة المرور؟
+              </a>
+            </div>
+
             <button
               type="submit"
               disabled={loading}
@@ -159,21 +195,19 @@ export default function Login() {
             >
               {loading ? 'جاري التحميل...' : 'دخول'}
             </button>
-
           </form>
-        <div className="flex justify-end mb-2">
-        <a href="/forgot-password" className="text-sm hover:underline" style={{ color: '#0F4C81' }}>
-            نسيت كلمة المرور؟
-        </a>
         </div>
 
-          <p className="text-center text-sm text-gray-400 mt-6">
-            ليس لديك حساب؟{' '}
-            <a href="/signup" className="text-blue-500 font-medium hover:underline">
-              إنشاء حساب
-            </a>
-          </p>
-        </div>
+        <p className="text-center text-sm text-gray-500 mt-6">
+          ليس لديك حساب؟{' '}
+          <Link
+            to="/signup"
+            className="font-medium hover:underline"
+            style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
+          >
+            إنشاء حساب جديد
+          </Link>
+        </p>
 
       </div>
     </div>

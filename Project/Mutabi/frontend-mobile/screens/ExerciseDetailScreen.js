@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import {
   View, Text, ScrollView, TouchableOpacity,
-  StyleSheet, ActivityIndicator,
+  StyleSheet, ActivityIndicator, Modal,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
+import { VideoView, useVideoPlayer } from 'expo-video'
 import { getLocalSessions, todayString } from '../utils/api'
 
 const BLUE   = '#1F6FEB'
@@ -36,8 +37,19 @@ export default function ExerciseDetailScreen() {
   const exercise    = route.params?.exercise || {}
   const isCompleted = route.params?.isCompleted || false
 
-  const [session, setSession] = useState(null)
+  const [session, setSession]           = useState(null)
   const [loadingSession, setLoadingSession] = useState(isCompleted)
+  const [videoVisible, setVideoVisible] = useState(false)
+
+  useEffect(() => {
+    if (exercise.exercise_title) {
+      navigation.setOptions({ title: `${exercise.exercise_title} | متابع` })
+    }
+  }, [exercise.exercise_title])
+
+  const videoPlayer = useVideoPlayer(exercise.exercise_media_url || null, player => {
+    player.loop = false
+  })
 
   useEffect(() => {
     if (!isCompleted) return
@@ -50,6 +62,16 @@ export default function ExerciseDetailScreen() {
       setLoadingSession(false)
     })
   }, [isCompleted, exercise.id])
+
+  const openVideo = () => {
+    setVideoVisible(true)
+    videoPlayer.play()
+  }
+
+  const closeVideo = () => {
+    videoPlayer.pause()
+    setVideoVisible(false)
+  }
 
   /* Parse steps_json if available */
   const steps = (() => {
@@ -82,6 +104,32 @@ export default function ExerciseDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Video Modal */}
+      {exercise.exercise_media_url ? (
+        <Modal
+          visible={videoVisible}
+          animationType="slide"
+          onRequestClose={closeVideo}
+          statusBarTranslucent
+        >
+          <View style={styles.modalContainer}>
+            <TouchableOpacity style={styles.modalClose} onPress={closeVideo}>
+              <Ionicons name="close-circle" size={34} color="#fff" />
+            </TouchableOpacity>
+            <VideoView
+              player={videoPlayer}
+              style={styles.videoPlayer}
+              contentFit="contain"
+              allowsFullscreen
+              allowsPictureInPicture
+            />
+            <Text style={styles.modalTitle} numberOfLines={2}>
+              {exercise.exercise_title}
+            </Text>
+          </View>
+        </Modal>
+      ) : null}
+
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
@@ -111,6 +159,16 @@ export default function ExerciseDetailScreen() {
               <View style={styles.goalBadge}>
                 <Text style={styles.goalBadgeText}>{exercise.exercise_goal}</Text>
               </View>
+            ) : null}
+            {exercise.exercise_media_url ? (
+              <TouchableOpacity
+                style={styles.watchBtn}
+                onPress={openVideo}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="play-circle" size={18} color={BLUE} />
+                <Text style={styles.watchBtnText}>شاهد الفيديو التوضيحي</Text>
+              </TouchableOpacity>
             ) : null}
           </View>
         </View>
@@ -225,6 +283,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   center:    { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
+  modalContainer: { flex: 1, backgroundColor: '#000', justifyContent: 'center' },
+  modalClose:     { position: 'absolute', top: 52, right: 16, zIndex: 10 },
+  videoPlayer:    { width: '100%', height: 300 },
+  modalTitle:     { color: '#fff', fontSize: 14, fontWeight: '600', textAlign: 'center', paddingHorizontal: 24, marginTop: 20, opacity: 0.85 },
+
   header:              { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   backBtn:             { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   headerTitle:         { flex: 1, textAlign: 'center', fontSize: 16, fontWeight: '700', color: '#1a1a2e' },
@@ -233,13 +296,15 @@ const styles = StyleSheet.create({
 
   scroll: { paddingBottom: 24 },
 
-  videoBox:          { backgroundColor: '#1a2a4a', height: 190, justifyContent: 'center', alignItems: 'center' },
+  videoBox:          { backgroundColor: '#1a2a4a', height: 200, justifyContent: 'center', alignItems: 'center' },
   videoBoxCompleted: { backgroundColor: '#0d3320' },
   videoOverlay:      { alignItems: 'center', gap: 10 },
   exerciseIconCircle:{ width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   videoTitle:        { color: '#fff', fontSize: 15, fontWeight: '700' },
   goalBadge:         { backgroundColor: 'rgba(255,255,255,0.15)', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 4 },
   goalBadgeText:     { color: '#fff', fontSize: 11, fontWeight: '600' },
+  watchBtn:          { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 7 },
+  watchBtnText:      { fontSize: 13, fontWeight: '700', color: BLUE },
 
   statsRow:       { flexDirection: 'row', justifyContent: 'space-around', padding: 20, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' },
   statItem:       { alignItems: 'center', gap: 6 },

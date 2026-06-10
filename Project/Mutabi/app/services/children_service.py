@@ -15,6 +15,7 @@ from app.models.Therapy_plans import TherapyPlans
 from app.models.Appointments import Appointments
 from app.models.Doctor_Notes import DoctorNotes
 from app.integrations.email import ResendEmailClient
+from app.services.subscription_service import SubscriptionService
 
 
 class ChildrenService:
@@ -30,6 +31,8 @@ class ChildrenService:
 
         if not ClinicRepository.get_by_id(clinic_id):
             raise ValueError("Clinic not found")
+
+        SubscriptionService.check_patient_limit(clinic_id, data["doctor_id"])
 
         child = ChildrenRepository.create({
             "clinic_id": clinic_id,

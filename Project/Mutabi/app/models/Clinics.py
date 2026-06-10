@@ -7,6 +7,7 @@ from app.models.BaseModel import BaseModel
 if TYPE_CHECKING:
     from app.models.User import Users
     from app.models.Children import Children
+    from app.models.Subscription import Subscription
 
 class Clinic(BaseModel):
     __tablename__ = 'clinics'
@@ -18,4 +19,9 @@ class Clinic(BaseModel):
 
     users: Mapped[list["Users"]] = relationship(back_populates='clinic')
     children: Mapped[list['Children']] = relationship(back_populates='clinic')
+    subscription: Mapped[Optional["Subscription"]] = relationship(
+        'Subscription', back_populates='clinic', uselist=False,
+        primaryjoin="and_(Clinic.id == foreign(Subscription.clinic_id), Subscription.status.in_(['trial', 'active']))",
+        viewonly=True
+    )
 

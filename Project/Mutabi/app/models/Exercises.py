@@ -1,6 +1,6 @@
 from typing import Optional, TYPE_CHECKING, List
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
-from sqlalchemy import String, Text
+from sqlalchemy import String, Text, ForeignKey
 from app.models.BaseModel import BaseModel
 import re
 
@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 class Exercises(BaseModel):
     __tablename__ = 'exercises'
 
+    clinic_id: Mapped[Optional[str]] = mapped_column(String(36), ForeignKey('clinics.id'), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(Text)
     doctor_media_url: Mapped[Optional[str]] = mapped_column(String(255))

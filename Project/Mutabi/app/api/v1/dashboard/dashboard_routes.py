@@ -82,6 +82,7 @@ def parent_home():
             return jsonify({
                 "parent_name": f"{parent.first_name} {parent.second_name}",
                 "clinic_name": clinic.name if clinic else "",
+                "children": [],
                 "child": None,
                 "active_plan": None,
                 "latest_note": None,
@@ -91,7 +92,11 @@ def parent_home():
                 "profile_picture_url": parent.profile_picture_url,
             }), 200
 
-        child = children[0]
+        child_id_param = request.args.get('child_id')
+        if child_id_param:
+            child = next((c for c in children if str(c.id) == child_id_param), children[0])
+        else:
+            child = children[0]
         child_id = str(child.id)
         active_plan = TherapyPlansRepository.get_active_by_child(child_id)
         latest_note = DoctorNotesRepository.get_latest_by_child(child_id)
@@ -108,6 +113,7 @@ def parent_home():
             "phone": parent.phone,
             "clinic_name": clinic.name if clinic else "",
             "profile_picture_url": parent.profile_picture_url,
+            "children": [{"id": str(c.id), "name": f"{c.first_name} {c.second_name}"} for c in children],
             "child": {
                 "id": child_id,
                 "name": f"{child.first_name} {child.second_name}",
@@ -129,6 +135,7 @@ def parent_home():
                 "exercise_difficulty": pe.exercise.difficulty,
                 "exercise_goal": pe.exercise.goal,
                 "exercise_steps_json": pe.exercise.steps_json,
+                "exercise_media_url": pe.exercise.doctor_media_url,
                 "reps": pe.reps,
                 "duration_minutes": pe.duration_minutes,
                 }
@@ -147,12 +154,17 @@ def get_exercises_by_day(day):
     try:
         claims = g.jwt_claims
         parent_id = claims["sub"]
-        
+
         children = ChildrenRepository.get_by_parent(parent_id)
         if not children:
             return jsonify([]), 200
-        
-        child_id = str(children[0].id)
+
+        child_id_param = request.args.get('child_id')
+        if child_id_param:
+            child = next((c for c in children if str(c.id) == child_id_param), children[0])
+        else:
+            child = children[0]
+        child_id = str(child.id)
         exercises = PlanExercisesRepository.get_by_day_and_child(child_id, day)
         
         return jsonify([
@@ -164,6 +176,7 @@ def get_exercises_by_day(day):
                 "exercise_difficulty": pe.exercise.difficulty,
                 "exercise_goal": pe.exercise.goal,
                 "exercise_steps_json": pe.exercise.steps_json,
+                "exercise_media_url": pe.exercise.doctor_media_url,
                 "reps": pe.reps,
                 "duration_minutes": pe.duration_minutes,
             }

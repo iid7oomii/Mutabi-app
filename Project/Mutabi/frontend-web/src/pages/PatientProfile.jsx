@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
+import Button from '../components/ui/Button'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -41,6 +42,7 @@ function PlanBadge({ status }) {
 }
 
 export default function PatientProfile() {
+  document.title = 'Patient Profile | Mutabi'
   const { id } = useParams()
   const navigate = useNavigate()
   const [patient, setPatient] = useState(null)
@@ -109,7 +111,8 @@ export default function PatientProfile() {
         <main className="flex-1 overflow-y-auto p-8">
 
           {/* Back */}
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate('/patients')}
             className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6 transition"
           >
@@ -117,7 +120,7 @@ export default function PatientProfile() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
             Back to Patients
-          </button>
+          </Button>
 
         {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -134,19 +137,20 @@ export default function PatientProfile() {
                 </div>
             </div>
             <div className="flex items-center gap-3">
-                <button
+                <Button
+                variant="ghost"
                 onClick={() => navigate(`/patients/${id}/progress`)}
                 className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50 transition"
                 >
                 Review Progress
-                </button>
-                <button
+                </Button>
+                <Button
                 onClick={() => navigate('/plans', { state: { patient } })}
                 className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl transition shadow-sm"
-                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                variant="primary"
                 >
                 {plan ? 'Edit Plan' : 'Create Plan'}
-                </button>
+                </Button>
             </div>
             </div>
 
@@ -297,7 +301,8 @@ export default function PatientProfile() {
                 {/* Collapsible Exercises */}
                 {plan.all_exercises?.length > 0 && (
                 <div className="border-t border-gray-100 pt-4">
-                    <button
+                    <Button
+                    variant="ghost"
                     onClick={() => setShowExercises(!showExercises)}
                     className="flex items-center justify-between w-full text-sm font-semibold text-gray-600 hover:text-gray-800 transition"
                     >
@@ -307,7 +312,7 @@ export default function PatientProfile() {
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
-                    </button>
+                    </Button>
 
                     {showExercises && (
                     <div className="mt-3 space-y-2">
@@ -328,7 +333,8 @@ export default function PatientProfile() {
                                 </p>
                             </div>
                             </div>
-                            <button
+                            <Button
+                            variant="ghost"
                             onClick={() => handleDeleteExercise(ex.id)}
                             className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-red-400 hover:bg-red-50 transition"
                             >
@@ -336,7 +342,7 @@ export default function PatientProfile() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            </button>
+                            </Button>
                         </div>
                         ))}
                     </div>
@@ -347,13 +353,13 @@ export default function PatientProfile() {
             ) : (
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 text-center">
                 <p className="text-sm text-gray-400 mb-3">No active therapy plan</p>
-                <button
+                <Button
                 onClick={() => navigate('/plans', { state: { patient } })}
                 className="px-4 py-2 text-sm font-semibold text-white rounded-xl transition"
-                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                variant="primary"
                 >
                 + Create Plan
-                </button>
+                </Button>
             </div>
             )}
 

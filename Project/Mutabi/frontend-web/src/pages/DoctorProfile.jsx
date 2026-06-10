@@ -39,6 +39,7 @@ function PlanBadge({ status }) {
 }
 
 export default function DoctorProfile() {
+  document.title = 'Doctor Profile | Mutabi'
   const { id } = useParams()
   const navigate = useNavigate()
   const { user: currentUser } = useAuthStore()

@@ -1,5 +1,6 @@
 from flask import Blueprint
 from .auth.auth_routes import auth_bp
+from .contact.contact_routes import contact_bp
 from .users.user_routes import user_bp
 from app.api.v1.dashboard.dashboard_routes import dashboard_bp
 from app.api.v1.children.children_routes import children_bp
@@ -12,6 +13,8 @@ from app.api.v1.appointments.appointments_routes import appointments_bp
 from app.api.v1.upload.upload_routes import upload_bp
 from app.api.v1.notifications.notifications_routes import notifications_bp
 from app.api.v1.articles.articles_routes import articles_bp
+from app.api.v1.subscriptions.subscription_routes import subscriptions_bp
+from app.api.v1.admin.admin_routes import admin_bp
 
 api_v1 = Blueprint('api_v1', __name__, url_prefix='/api/v1')
 
@@ -28,3 +31,6 @@ api_v1.register_blueprint(appointments_bp)
 api_v1.register_blueprint(upload_bp)
 api_v1.register_blueprint(notifications_bp)
 api_v1.register_blueprint(articles_bp)
+api_v1.register_blueprint(contact_bp)
+api_v1.register_blueprint(subscriptions_bp)
+api_v1.register_blueprint(admin_bp)

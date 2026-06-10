@@ -7,6 +7,7 @@ from app.utils.helpers import generate_token, generate_temp_password, generate_r
 from app.models.EnumUsers import RoleUser
 from app.repositories.clinic_repository import ClinicRepository
 from app.integrations.email import ResendEmailClient
+from app.services.subscription_service import SubscriptionService
 
 
 
@@ -66,6 +67,9 @@ class AuthService:
     def create_doctor(data: dict) -> dict:
         if UserRepositories.email_exists(data["email"]):
             raise ValueError("Email already exists")
+
+        # SUBSCRIPTION CHECK DISABLED
+        # SubscriptionService.check_doctor_limit(data["clinic_id"])
 
         temp_password = generate_temp_password()
 

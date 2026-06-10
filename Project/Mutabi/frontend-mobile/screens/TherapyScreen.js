@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   View, Text, ScrollView, TouchableOpacity,
   StyleSheet, ActivityIndicator,
@@ -7,8 +7,7 @@ import { useNavigation } from '@react-navigation/native'
 import { Ionicons } from '@expo/vector-icons'
 import Header from '../components/Header'
 import { apiGet, getLocalSessions, todayString, localDayName } from '../utils/api'
-import { useFocusEffect } from '@react-navigation/native'
-import { useCallback } from 'react'
+import { useChild } from '../contexts/ChildContext'
 
 const BLUE   = '#1F6FEB'
 const ORANGE = '#FF7A00'
@@ -46,6 +45,7 @@ function StatusBadge({ status }) {
 
 export default function TherapyScreen({ onTabPress }) {
   const navigation = useNavigation()
+  const { selectedChildId, ready } = useChild()
   const [data, setData]               = useState(null)
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState('')
@@ -56,9 +56,10 @@ export default function TherapyScreen({ onTabPress }) {
 
   const weekDates = getWeekDates()
 
-	const fetchData = async () => {
+	const fetchData = async (childId) => {
 		try {
-			const res = await apiGet(`/dashboard/parent?day=${localDayName()}`)
+			const childParam = childId ? `&child_id=${childId}` : ''
+			const res = await apiGet(`/dashboard/parent?day=${localDayName()}${childParam}`)
 			const json = await res.json()
 			if (!res.ok) { setError(json.error || 'خطأ'); return }
 			setData(json)
@@ -78,16 +79,15 @@ export default function TherapyScreen({ onTabPress }) {
 		setCompleted(ids)
 	}
 
-	useFocusEffect(
-		useCallback(() => {
-			setLoading(true)
-			setError('')
-			setSelectedDay(null)
-			setDayExercises(null)
-			fetchData()
-			loadCompleted()
-		}, [])
-	)
+	useEffect(() => {
+		if (!ready) return
+		setLoading(true)
+		setError('')
+		setSelectedDay(null)
+		setDayExercises(null)
+		fetchData(selectedChildId)
+		loadCompleted()
+	}, [selectedChildId, ready])
 
 		const handleDayPress = (dayIndex, isToday) => {
 			if (!isToday) return

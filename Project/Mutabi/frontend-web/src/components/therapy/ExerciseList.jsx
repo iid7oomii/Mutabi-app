@@ -25,7 +25,7 @@ const EmptyPlanIcon = () => (
   </svg>
 )
 
-export default function ExerciseList({ selected, removeExercise, updateDay, updateReps, updateDuration }) {
+export default function ExerciseList({ selected, removeExercise, updateDay, updateReps, updateDuration, invalidIds = [] }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
       <div className="flex items-center justify-between mb-5">
@@ -49,9 +49,10 @@ export default function ExerciseList({ selected, removeExercise, updateDay, upda
         <div className="space-y-2.5">
           {selected.map(({ exercise, target_days, reps, duration_minutes }) => {
             const color = exColor(exercise.id)
+            const isInvalid = invalidIds.includes(exercise.id)
             return (
               <div key={exercise.id}
-                className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-gray-200 transition">
+                className={`flex items-center gap-3 p-3 rounded-xl border transition ${isInvalid ? 'border-red-300 bg-red-50' : 'border-gray-100 hover:border-gray-200'}`}>
                 <span className="cursor-grab active:cursor-grabbing flex-shrink-0"><DragIcon /></span>
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
                   style={{ background: color }}>
@@ -83,7 +84,7 @@ export default function ExerciseList({ selected, removeExercise, updateDay, upda
                   placeholder="Reps"
                   value={reps || ''}
                   onChange={e => updateReps(exercise.id, e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-100 transition"
+                  className={`w-16 border rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 transition ${isInvalid ? 'border-red-300 focus:ring-red-100' : 'border-gray-200 focus:ring-blue-100'}`}
                 />
 
                 {/* Duration */}
@@ -93,10 +94,11 @@ export default function ExerciseList({ selected, removeExercise, updateDay, upda
                   placeholder="Mins"
                   value={duration_minutes || ''}
                   onChange={e => updateDuration(exercise.id, e.target.value ? parseInt(e.target.value) : null)}
-                  className="w-16 border border-gray-200 rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-100 transition"
+                  className={`w-16 border rounded-lg px-2 py-1.5 text-xs text-gray-700 focus:outline-none focus:ring-1 transition ${isInvalid ? 'border-red-300 focus:ring-red-100' : 'border-gray-200 focus:ring-blue-100'}`}
                 />
 
                 <button onClick={() => removeExercise(exercise.id)}
+                  type="button"
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300
                     hover:text-red-400 hover:bg-red-50 transition flex-shrink-0">
                   <TrashIcon />

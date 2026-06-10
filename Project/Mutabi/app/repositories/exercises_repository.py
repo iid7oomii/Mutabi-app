@@ -17,8 +17,11 @@ class ExercisesRepository:
         return db.session.get(Exercises, exercise_id)
 
     @staticmethod
-    def get_all() -> List[Exercises]:
-        return db.session.query(Exercises).all()
+    def get_all(clinic_id: str = None) -> List[Exercises]:
+        q = db.session.query(Exercises)
+        if clinic_id:
+            q = q.filter(Exercises.clinic_id == clinic_id)
+        return q.all()
 
     @staticmethod
     def update(exercise_id: str, data: dict) -> Optional[Exercises]:

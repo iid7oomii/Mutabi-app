@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { API_BASE_URL } from '../config';
 import Sidebar from '../components/Sidebar'
+import Button from '../components/ui/Button'
 
 const AVATAR_COLORS = ['#4ECDC4','#45B7D1','#96C93D','#F7A072','#9B59B6','#3498DB','#E67E22','#1ABC9C']
 const avatarColor = name => AVATAR_COLORS[(name || 'X').charCodeAt(0) % AVATAR_COLORS.length]
@@ -11,6 +12,7 @@ function formatDate(s) {
 }
 
 export default function DoctorNotes() {
+  document.title = 'Doctor Notes | Mutabi'
   const [children, setChildren]       = useState([])
   const [selected, setSelected]       = useState(null)
   const [notes, setNotes]             = useState([])
@@ -105,7 +107,8 @@ export default function DoctorNotes() {
               const name   = `${child.first_name} ${child.second_name}`
               const active = selected?.id === child.id
               return (
-                <button
+                <Button
+                  variant="ghost"
                   key={child.id}
                   onClick={() => setSelected(child)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
@@ -124,7 +127,7 @@ export default function DoctorNotes() {
                     </p>
                     <p className="text-xs text-gray-400">Patient</p>
                   </div>
-                </button>
+                </Button>
               )
             })}
             {filtered.length === 0 && (
@@ -175,14 +178,14 @@ export default function DoctorNotes() {
                 />
                 {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
                 <div className="flex justify-end mt-2">
-                  <button
+                  <Button
                     onClick={handleAdd}
                     disabled={saving || !content.trim()}
                     className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-50"
-                    style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+                    variant="primary"
                   >
                     {saving ? 'Saving...' : 'Add Note'}
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -218,7 +221,8 @@ export default function DoctorNotes() {
                             <p className="text-sm text-gray-700 leading-relaxed">{note.content}</p>
                             <p className="text-xs text-gray-400 mt-3">{formatDate(note.created_at)}</p>
                           </div>
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={() => handleDelete(note.id)}
                             className="text-gray-300 hover:text-red-400 transition-colors flex-shrink-0 mt-1 p-1"
                           >
@@ -226,7 +230,7 @@ export default function DoctorNotes() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))}

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import useAuthStore from '../store/authStore'
 import { TrashIcon } from '../components/Icons'
+import Button from '../components/ui/Button'
 
 const AVATAR_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -53,6 +54,7 @@ function PlanBadge({ status, title }) {
 }
 
 export default function Patients() {
+  document.title = 'Patients | Mutabi'
   const { user } = useAuthStore()
   const navigate = useNavigate()
   const isAdmin = user?.role === 'admin'
@@ -229,14 +231,14 @@ export default function Patients() {
                 Manage and track your assigned children and their therapy plans.
               </p>
             </div>
-            <button
+            <Button
               onClick={() => navigate('/registration')}
               className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl shadow-sm transition"
-              style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+              variant="primary"
             >
               <span className="text-lg leading-none">+</span>
               Add New Patient
-            </button>
+            </Button>
           </div>
 
           {/* Tabs */}
@@ -246,7 +248,8 @@ export default function Patients() {
                 { key: 'patients', label: 'Patients List' },
                 { key: 'requests', label: `Registration Requests${requests.length > 0 ? ` (${requests.filter(r => r.status === 'pending').length})` : ''}` },
               ].map(tab => (
-                <button
+                <Button
+                  variant="ghost"
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
                   className={`px-5 py-2 rounded-xl text-sm font-semibold border transition ${
@@ -256,7 +259,7 @@ export default function Patients() {
                   }`}
                 >
                   {tab.label}
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -301,17 +304,18 @@ export default function Patients() {
                         <td className="px-6 py-4">
                           {r.status === 'pending' && (
                             <div className="flex gap-2">
-                              <button
+                              <Button
                                 onClick={() => { setApproveModal({ id: r.id, name: `${r.first_name} ${r.second_name}` }); setApproveError(''); setSelectedDoc('') }}
                                 className="px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition"
-                                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+                                variant="primary">
                                 Approve
-                              </button>
-                              <button
+                              </Button>
+                              <Button
+                                variant="ghost"
                                 onClick={() => setRejectModal({ id: r.id, name: `${r.first_name} ${r.second_name}` })}
                                 className="px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition">
                                 Reject
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </td>
@@ -350,7 +354,8 @@ export default function Patients() {
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 font-medium">Status:</span>
                 {STATUS_FILTERS.map(f => (
-                  <button
+                  <Button
+                    variant="ghost"
                     key={f}
                     onClick={() => setStatusFilter(f)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${
@@ -360,7 +365,7 @@ export default function Patients() {
                     }`}
                   >
                     {f}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -446,26 +451,29 @@ export default function Patients() {
                               <span className="text-sm text-gray-600">Dr. {p.doctor.name}</span>
                             </div>
                           ) : (
-                            <button
+                            <Button
+                              variant="ghost"
                               onClick={(e) => { e.stopPropagation(); setAssignModal({ id: p.id, name: fullName }); setAssignDoc(''); setAssignError('') }}
                               className="px-3 py-1.5 text-xs font-semibold text-orange-600 border border-orange-200 rounded-lg hover:bg-orange-50 transition">
                               Assign Doctor
-                            </button>
+                            </Button>
                           )}
                         </td>
                       )}
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
-                          <button
+                          <Button
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); navigate(`/patients/${p.id}`) }}
                             className="text-xs font-medium px-3 py-1.5 rounded-lg border border-blue-200 text-blue-600 hover:bg-blue-50 transition">
                             View Profile
-                          </button>
-                          <button
+                          </Button>
+                          <Button
+                            variant="ghost"
                             onClick={(e) => { e.stopPropagation(); setConfirmDelete({ id: p.id, name: fullName }) }}
                             className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 transition">
                             <TrashIcon className="w-3.5 h-3.5" />
-                          </button>
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -504,18 +512,19 @@ export default function Patients() {
               <p className="text-xs text-red-500 text-center bg-red-50 rounded-lg px-3 py-2 mb-4">{deleteError}</p>
             )}
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => { setConfirmDelete(null); setDeleteError(null) }}
                 className="flex-1 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}>
+                variant="danger">
                 {deleting ? 'Deleting...' : 'Delete'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -543,18 +552,19 @@ export default function Patients() {
             </select>
             {approveError && <p className="text-xs text-red-500 text-center mb-3">{approveError}</p>}
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => { setApproveModal(null); setSelectedDoc(''); setApproveError('') }}
                 className="flex-1 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleApprove}
                 disabled={approving}
                 className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+                variant="primary">
                 {approving ? 'Approving...' : 'Approve'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -569,18 +579,19 @@ export default function Patients() {
               Reject registration request for <strong>{rejectModal.name}</strong>?
             </p>
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setRejectModal(null)}
                 className="flex-1 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleReject}
                 disabled={rejecting}
                 className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #dc2626, #ef4444)' }}>
+                variant="danger">
                 {rejecting ? 'Rejecting...' : 'Reject'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -608,18 +619,19 @@ export default function Patients() {
             </select>
             {assignError && <p className="text-xs text-red-500 text-center mb-3">{assignError}</p>}
             <div className="flex gap-3">
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => { setAssignModal(null); setAssignDoc(''); setAssignError('') }}
                 className="flex-1 py-2.5 text-sm font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition">
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleAssignDoctor}
                 disabled={assigning}
                 className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+                variant="primary">
                 {assigning ? 'Saving...' : 'Assign'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

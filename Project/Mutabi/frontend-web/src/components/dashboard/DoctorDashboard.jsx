@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/authStore'
 import { API_BASE_URL } from '../../config';
 import { WarningIcon, UsersIcon, XCircleIcon, UserIcon, ArrowUpIcon, CheckIcon, CloseIcon } from '../Icons'
+import Button from '../ui/Button'
 
 export default function DoctorDashboard() {
   const { user } = useAuthStore()
@@ -47,19 +48,20 @@ export default function DoctorDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate('/exercises')}
-            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+            className="px-4 py-2 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50"
           >
             Exercise Library
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="primary"
             onClick={() => navigate('/plans')}
-            className="px-4 py-2 text-sm rounded-lg text-white font-medium transition"
-            style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+            className="px-4 py-2 text-sm rounded-lg"
           >
             + Create Plan
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -105,12 +107,12 @@ export default function DoctorDashboard() {
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="text-sm font-semibold text-gray-700">Recent Patient Feedback</h2>
-          <button
+          <Button variant="ghost"
             onClick={() => navigate('/feedback')}
             className="text-xs font-medium hover:underline transition"
             style={{ color: '#0F4C81' }}>
             View All
-          </button>
+          </Button>
         </div>
 
         <div className="divide-y divide-gray-50">

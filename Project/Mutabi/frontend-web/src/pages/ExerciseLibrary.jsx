@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Sidebar from '../components/Sidebar'
 import { API_BASE_URL } from '../config';
 import { WarningIcon, CloseIcon } from '../components/Icons'
+import Button from '../components/ui/Button'
 
 const EX_COLORS = [
   '#4ECDC4', '#45B7D1', '#96C93D', '#F7A072',
@@ -12,68 +13,68 @@ const exColor = (str) => EX_COLORS[(str || 'A').charCodeAt(0) % EX_COLORS.length
 /* SVG icon shapes — each returns a <path> string for a 24×24 viewBox */
 const ICON_OPTIONS = [
   {
-    value: 'walk-outline', label: 'المشي',
+    value: 'walk-outline', label: 'Walking',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="4" r="1.5"/><path d="M9 8l-2 5h3l1 5 2-3-1-2h3l-2-5"/></svg>,
   },
   {
-    value: 'fitness-outline', label: 'اللياقة',
+    value: 'fitness-outline', label: 'Fitness',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M6 9H4a1 1 0 00-1 1v4a1 1 0 001 1h2m0-6v6m0-6h12m0 0h2a1 1 0 011 1v4a1 1 0 01-1 1h-2m0-6v6M8 9v6m8-6v6"/></svg>,
   },
   {
-    value: 'mic-outline', label: 'النطق',
+    value: 'mic-outline', label: 'Speech',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M5 10a7 7 0 0014 0M12 19v3M9 22h6"/></svg>,
   },
   {
-    value: 'happy-outline', label: 'التعبير',
+    value: 'happy-outline', label: 'Expression',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="12" r="9"/><path d="M8.5 14s1 2 3.5 2 3.5-2 3.5-2"/><circle cx="9" cy="10" r="0.5" fill="currentColor"/><circle cx="15" cy="10" r="0.5" fill="currentColor"/></svg>,
   },
   {
-    value: 'musical-notes-outline', label: 'الموسيقى',
+    value: 'musical-notes-outline', label: 'Music',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>,
   },
   {
-    value: 'hand-left-outline', label: 'اليد',
+    value: 'hand-left-outline', label: 'Hand',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M18 11V7a2 2 0 00-4 0v4M14 7V5a2 2 0 00-4 0v6M10 5V4a2 2 0 00-4 0v10l-2-2a2 2 0 00-3 3l5 5h9a4 4 0 004-4v-4a2 2 0 00-4 0v1"/></svg>,
   },
   {
-    value: 'eye-outline', label: 'البصر',
+    value: 'eye-outline', label: 'Vision',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>,
   },
   {
-    value: 'ear-outline', label: 'السمع',
+    value: 'ear-outline', label: 'Hearing',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M6 12a6 6 0 1112 0c0 4-3 6-3 9H9c0-3-3-5-3-9z"/><path d="M10 16a2 2 0 004 0"/></svg>,
   },
   {
-    value: 'body-outline', label: 'الجسم',
+    value: 'body-outline', label: 'Body',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="4" r="1.5"/><path d="M12 7v7M9 10l-2 5M15 10l2 5M9 22l2-4h2l2 4"/></svg>,
   },
   {
-    value: 'extension-puzzle-outline', label: 'الألعاب',
+    value: 'extension-puzzle-outline', label: 'Games',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M19.5 12c0-.23-.01-.45-.03-.68l2.02-1.56a.5.5 0 00.12-.63l-1.87-3.24a.5.5 0 00-.6-.22l-2.4.96a8.3 8.3 0 00-1.14-.66l-.36-2.55A.5.5 0 0014.75 3h-3.5a.5.5 0 00-.49.43l-.36 2.55c-.39.18-.77.4-1.14.66l-2.4-.96a.5.5 0 00-.6.22L4.39 9.14a.5.5 0 00.12.63l2.02 1.56A7.17 7.17 0 006.5 12a7.17 7.17 0 00.03.68l-2.02 1.56a.5.5 0 00-.12.63l1.87 3.24a.5.5 0 00.6.22l2.4-.96c.37.26.75.47 1.14.66l.36 2.55c.07.25.3.42.49.42h3.5a.5.5 0 00.49-.43l.36-2.55c.39-.18.77-.4 1.14-.66l2.4.96a.5.5 0 00.6-.22l1.87-3.24a.5.5 0 00-.12-.63l-2.02-1.56c.01-.23.03-.45.03-.68z"/><circle cx="12" cy="12" r="3"/></svg>,
   },
   {
-    value: 'color-palette-outline', label: 'الفن',
+    value: 'color-palette-outline', label: 'Art',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 2a10 10 0 000 20c1.1 0 2-.9 2-2v-.5c0-.55.45-1 1-1h2.5a3 3 0 003-3A10 10 0 0012 2z"/><circle cx="8.5" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="7" r="1" fill="currentColor"/><circle cx="15.5" cy="10.5" r="1" fill="currentColor"/></svg>,
   },
   {
-    value: 'basketball-outline', label: 'الرياضة',
+    value: 'basketball-outline', label: 'Sports',
     svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9a14.1 14.1 0 0014.2 14.2M4.9 19.1A14.1 14.1 0 0119.1 4.9M12 2v20M2 12h20"/></svg>,
   },
 ]
 
 const GOAL_OPTIONS = [
-  'تمرين أولي',
-  'تمرين أساسي',
-  'تمرين إضافي',
-  'تمرين مهم',
-  'تمرين تقييمي',
-  'تمرين تعزيزي',
+  'Initial Exercise',
+  'Core Exercise',
+  'Additional Exercise',
+  'Key Exercise',
+  'Assessment Exercise',
+  'Reinforcement Exercise',
 ]
 
 const DIFFICULTY_OPTIONS = [
-  { value: 'easy',   label: 'سهل',   labelEn: 'Easy',   color: '#2E7D32', bg: '#E8F5E9' },
-  { value: 'medium', label: 'متوسط', labelEn: 'Medium', color: '#E65100', bg: '#FFF3E8' },
-  { value: 'hard',   label: 'صعب',   labelEn: 'Hard',   color: '#B71C1C', bg: '#FFEBEE' },
+  { value: 'easy',   label: 'Easy',   color: '#2E7D32', bg: '#E8F5E9' },
+  { value: 'medium', label: 'Medium', color: '#E65100', bg: '#FFF3E8' },
+  { value: 'hard',   label: 'Hard',   color: '#B71C1C', bg: '#FFEBEE' },
 ]
 
 const EMPTY_FORM = {
@@ -83,6 +84,7 @@ const EMPTY_FORM = {
 }
 
 export default function ExerciseLibrary() {
+  document.title = 'Exercise Library | Mutabi'
   const [exercises, setExercises] = useState([])
   const [loading, setLoading]     = useState(true)
   const [search, setSearch]       = useState('')
@@ -182,23 +184,23 @@ export default function ExerciseLibrary() {
               <h1 className="text-2xl font-bold text-gray-800">Exercise Library</h1>
               <p className="text-sm text-gray-400 mt-1">Manage and template reusable therapy exercises.</p>
             </div>
-            <button
+            <Button
               onClick={() => { setShowModal(true); setError(null); setForm(EMPTY_FORM) }}
               className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-xl shadow-sm transition"
-              style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}
+              variant="primary"
             >
               <span className="text-lg leading-none">+</span> Add Exercise
-            </button>
+            </Button>
           </div>
 
           {error && (
             <div className="mb-6 px-4 py-3 bg-red-50 border border-red-100 rounded-xl text-sm text-red-600 flex items-center justify-between gap-3">
               <div className="flex items-center gap-2"><WarningIcon /><span>{error}</span></div>
-              <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
+              <Button variant="ghost" onClick={() => setError(null)} className="text-red-400 hover:text-red-600">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-              </button>
+              </Button>
             </div>
           )}
 
@@ -264,25 +266,25 @@ export default function ExerciseLibrary() {
                         {diff && (
                           <span className="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0"
                             style={{ backgroundColor: diff.bg, color: diff.color }}>
-                            {diff.labelEn}
+                            {diff.label}
                           </span>
                         )}
                       </div>
                       {ex.goal && (
-                        <p className="text-xs font-medium text-blue-600 mb-1" dir="rtl">{ex.goal}</p>
+                        <p className="text-xs font-medium text-blue-600 mb-1">{ex.goal}</p>
                       )}
                       <p className="text-xs text-gray-400 leading-relaxed flex-1 line-clamp-3">
                         {ex.description || '—'}
                       </p>
                       <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                        <button onClick={() => handleDelete(ex.id)}
+                        <Button variant="ghost" onClick={() => handleDelete(ex.id)}
                           className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 transition">
                           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                               d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
                           Delete
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -299,10 +301,10 @@ export default function ExerciseLibrary() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-gray-800">Add New Exercise</h2>
-              <button onClick={() => { setShowModal(false); setError(null) }}
+              <Button variant="ghost" onClick={() => { setShowModal(false); setError(null) }}
                 className="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-400 transition">
                 <CloseIcon className="w-4 h-4" />
-              </button>
+              </Button>
             </div>
 
             {error && (
@@ -328,7 +330,7 @@ export default function ExerciseLibrary() {
                 </label>
                 <div className="grid grid-cols-6 gap-2">
                   {ICON_OPTIONS.map(opt => (
-                    <button key={opt.value} type="button"
+                    <Button key={opt.value} type="button" variant="ghost"
                       onClick={() => setForm(f => ({ ...f, icon: f.icon === opt.value ? '' : opt.value }))}
                       className={`flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition ${
                         form.icon === opt.value
@@ -338,8 +340,8 @@ export default function ExerciseLibrary() {
                       title={opt.label}
                     >
                       {opt.svg}
-                      <span className="text-[9px] leading-tight text-center" dir="rtl">{opt.label}</span>
-                    </button>
+                      <span className="text-[9px] leading-tight text-center">{opt.label}</span>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -350,9 +352,8 @@ export default function ExerciseLibrary() {
                   Goal <span className="text-gray-300">(optional)</span>
                 </label>
                 <select value={form.goal} onChange={e => setForm(f => ({ ...f, goal: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white"
-                  dir="rtl">
-                  <option value="">— اختر الهدف —</option>
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition bg-white">
+                  <option value="">— Select goal —</option>
                   {GOAL_OPTIONS.map(g => <option key={g} value={g}>{g}</option>)}
                 </select>
               </div>
@@ -364,15 +365,14 @@ export default function ExerciseLibrary() {
                 </label>
                 <div className="flex gap-2">
                   {DIFFICULTY_OPTIONS.map(d => (
-                    <button key={d.value} type="button"
+                    <Button key={d.value} type="button" variant="ghost"
                       onClick={() => setForm(f => ({ ...f, difficulty: f.difficulty === d.value ? '' : d.value }))}
                       className="flex-1 py-2 rounded-xl border-2 text-sm font-semibold transition"
                       style={form.difficulty === d.value
                         ? { borderColor: d.color, backgroundColor: d.bg, color: d.color }
-                        : { borderColor: '#e5e7eb', backgroundColor: '#f9fafb', color: '#9ca3af' }}
-                      dir="rtl">
+                        : { borderColor: '#e5e7eb', backgroundColor: '#f9fafb', color: '#9ca3af' }}>
                       {d.label}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -381,14 +381,14 @@ export default function ExerciseLibrary() {
               <div>
                 <label className="block text-xs font-medium text-gray-500 mb-2">Content Type</label>
                 <div className="flex rounded-xl border border-gray-200 overflow-hidden">
-                  <button type="button" onClick={() => setForm(f => ({ ...f, useSteps: false }))}
+                  <Button type="button" variant="ghost" onClick={() => setForm(f => ({ ...f, useSteps: false }))}
                     className={`flex-1 py-2 text-sm font-medium transition ${!form.useSteps ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
                     Plain Description
-                  </button>
-                  <button type="button" onClick={() => setForm(f => ({ ...f, useSteps: true, steps: f.steps.length ? f.steps : [''] }))}
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={() => setForm(f => ({ ...f, useSteps: true, steps: f.steps.length ? f.steps : [''] }))}
                     className={`flex-1 py-2 text-sm font-medium transition ${form.useSteps ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 hover:bg-gray-50'}`}>
                     Numbered Steps
-                  </button>
+                  </Button>
                 </div>
               </div>
 
@@ -406,19 +406,19 @@ export default function ExerciseLibrary() {
                           value={step} onChange={e => updateStep(i, e.target.value)}
                           className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-100 transition" />
                         {form.steps.length > 1 && (
-                          <button type="button" onClick={() => removeStep(i)}
+                          <Button type="button" variant="ghost" onClick={() => removeStep(i)}
                             className="text-gray-300 hover:text-red-400 transition">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                             </svg>
-                          </button>
+                          </Button>
                         )}
                       </div>
                     ))}
-                    <button type="button" onClick={addStep}
+                    <Button type="button" variant="ghost" onClick={addStep}
                       className="flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 font-medium mt-1 transition">
                       <span className="text-base leading-none">+</span> Add Step
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ) : (
@@ -441,10 +441,10 @@ export default function ExerciseLibrary() {
                     {form.doctor_media_url.match(/\.(mp4|mov|webm)$/i)
                       ? <video src={form.doctor_media_url} className="w-full h-full object-cover" />
                       : <img src={form.doctor_media_url} alt="preview" className="w-full h-full object-cover" />}
-                    <button onClick={() => setForm(f => ({ ...f, doctor_media_url: '' }))}
+                    <Button variant="ghost" onClick={() => setForm(f => ({ ...f, doctor_media_url: '' }))}
                       className="absolute top-2 right-2 w-6 h-6 bg-black/50 rounded-full text-white flex items-center justify-center hover:bg-black/70 transition">
                       <CloseIcon className="w-3 h-3" />
-                    </button>
+                    </Button>
                   </div>
                 ) : (
                   <label className={`flex flex-col items-center justify-center h-20 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-gray-300 transition ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
@@ -465,15 +465,15 @@ export default function ExerciseLibrary() {
             </div>
 
             <div className="flex items-center justify-end gap-3 mt-6">
-              <button onClick={() => { setShowModal(false); setError(null) }}
+              <Button variant="ghost" onClick={() => { setShowModal(false); setError(null) }}
                 className="text-sm text-gray-500 hover:text-gray-700 transition font-medium">
                 Cancel
-              </button>
-              <button onClick={handleSubmit} disabled={saving || uploading}
+              </Button>
+              <Button onClick={handleSubmit} disabled={saving || uploading}
                 className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl transition disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg, #0F4C81, #2c78bb)' }}>
+                variant="primary">
                 {saving ? 'Saving...' : 'Add Exercise'}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -21,7 +21,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.kmsao.frontendmobile"
+      "package": "com.kmsao.frontendmobile",
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,6 +32,9 @@
         "projectId": "2b947be6-1ee6-4e7e-bcf5-a00864f85d93"
       }
     },
-    "owner": "kmsao"
+    "owner": "kmsao",
+    "plugins": [
+      "expo-video"
+    ]
   }
 }
