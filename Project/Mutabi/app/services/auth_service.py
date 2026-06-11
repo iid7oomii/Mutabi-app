@@ -179,7 +179,7 @@ class AuthService:
             return {"message": "إذا كان البريد الإلكتروني مسجلاً، سيصلك رابط إعادة التعيين قريباً"}
 
         token = generate_reset_token(str(user.id))
-        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        frontend_url = os.getenv("FRONTEND_URL", "http://mutabi.app")
         reset_link = f"{frontend_url}/reset-password?token={token}"
 
         try:
