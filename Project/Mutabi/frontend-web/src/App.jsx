@@ -20,8 +20,6 @@ import SetPassword from './pages/SetPassword'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import LandingPage from './pages/LandingPage'
-import PricingPage from './pages/PricingPage'
-import SubscriptionCallback from './pages/SubscriptionCallback'
 import Signup from './pages/Signup'
 import MutabiAdmin from './pages/MutabiAdmin'
 import './App.css'
@@ -177,13 +175,6 @@ function App() {
 
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
-
-                <Route path="/subscription" element={
-                  <ProtectedRoute><PricingPage /></ProtectedRoute>
-                } />
-                <Route path="/subscription/callback" element={
-                  <ProtectedRoute><SubscriptionCallback /></ProtectedRoute>
-                } />
 
                 <Route path="/mutabi-admin" element={<MutabiAdmin />} />
     </Routes>
