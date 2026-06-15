@@ -6,6 +6,9 @@ import screen1 from '../assets/phone-screen1.jpg';
 import screen2 from '../assets/phone-screen2.jpg';
 import screen3 from '../assets/phone-screen3.jpg';
 import logo from '../assets/logo-mark.svg';
+import photoAbdulrahman from '../assets/photo_5873077553914908062_w.jpg';
+import photoKhalid from '../assets/photo_5873077553914908063_y.jpg';
+import photoAbdullah from '../assets/Abdullah_260615_090805_page-0001.jpg';
 
 const CheckIcon = () => (
   <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -282,7 +285,6 @@ export default function LandingPage() {
           <div className={`hidden md:flex items-center gap-8 text-sm font-medium transition-colors duration-300 ${scrolled ? 'text-gray-600' : 'text-white/90'}`}>
             <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className={`transition-colors ${scrolled ? 'hover:text-gray-900' : 'hover:text-white'}`}>الرئيسية</button>
             <a href="#products" className={`transition-colors ${scrolled ? 'hover:text-gray-900' : 'hover:text-white'}`}>المنتجات</a>
-            <a href="#pricing" className={`transition-colors ${scrolled ? 'hover:text-gray-900' : 'hover:text-white'}`}>الباقات</a>
             <button onClick={() => openContact()} className={`transition-colors ${scrolled ? 'hover:text-gray-900' : 'hover:text-white'}`}>تواصل معنا</button>
           </div>
           <div className="flex items-center gap-3">
@@ -333,7 +335,7 @@ export default function LandingPage() {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <button
-                  onClick={() => document.getElementById('pricing').scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => navigate('/signup')}
                   className="flex items-center justify-center gap-2 text-lg px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-xl shadow-lg shadow-orange-500/40 transition-colors font-medium"
                 >
                   <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -453,118 +455,110 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="px-6 py-20 bg-white">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-6">
-            <h2 className="mb-4 text-4xl md:text-5xl font-bold">الباقات والأسعار</h2>
-            <p className="text-xl text-gray-600">جميع الباقات تشمل كامل الميزات — الفرق في عدد المستخدمين</p>
+      {/* About */}
+      <section id="about" className="px-6 py-20 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="mb-4 text-4xl md:text-5xl font-bold">عن المشروع</h2>
           </div>
 
-          {/* COMING SOON OVERLAY WRAPPER */}
-          <div className="relative">
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-3xl bg-white/80 backdrop-blur-sm">
-              <div className="flex flex-col items-center gap-3 px-8 py-6 bg-white rounded-2xl shadow-lg border border-amber-200">
-                <svg className="h-10 w-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="text-xl font-bold text-gray-800">الباقات قيد الإنشاء</p>
-                <p className="text-sm text-gray-500 text-center">سيتم الإعلان عن الباقات والأسعار قريباً</p>
-              </div>
-            </div>
+          {/* Story */}
+          <div className="rounded-2xl bg-gradient-to-br from-blue-50 to-orange-50 border border-blue-100 p-8 md:p-10 mb-12">
+            <p className="text-gray-700 leading-relaxed text-lg mb-4">
+              نظام متابع هو نظام إلكتروني لإدارة عيادات ومراكز تأهيل الأطفال. فكرته الأساسية هي ربط العيادة بمنزل المريض. يوفر النظام للعيادة لوحة تحكم لتنظيم ومتابعة خطط العلاج، ويوفر لأهالي الأطفال تطبيق جوال لتطبيق التمارين في البيت.
+            </p>
+            <p className="text-gray-700 leading-relaxed text-lg mb-4">
+              هدف النظام هو الاستغناء عن الخطط الورقية، وتحويل المتابعة إلى نظام رقمي يعطي العيادة بيانات دقيقة عن تطور حالة الطفل ومدى التزام الأهل بالخطة العلاجية.
+            </p>
+            <p className="text-gray-600 text-base">
+              متابع هو مشروع تخرج لـ{' '}
+              <a
+                href="https://www.holbertonschool.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline font-medium"
+              >
+                Holberton School
+              </a>
+              {' '}— بُني على مدى أشهر من البحث والتطوير المكثّف.
+            </p>
+          </div>
 
-          <div className="opacity-30 pointer-events-none select-none">
-          {plans.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-8 items-stretch">
-              {plans.map(plan => {
-                const meta   = PLAN_META[plan.plan_type] || PLAN_META.specialist
-                const border = BORDER_CLS[meta.color] || 'border-gray-200'
-                const featured = plan.plan_type === 'clinic'
-
-                return (
-                  <div
-                    key={plan.plan_type}
-                    className={`rounded-2xl border-2 ${featured ? 'border-orange-400 shadow-lg shadow-orange-100' : border} hover:shadow-xl transition-shadow p-8 relative flex flex-col`}
-                  >
-                    {meta.badge && (
-                      <span className={`absolute -top-3.5 left-1/2 -translate-x-1/2 text-white text-xs px-4 py-1.5 rounded-full font-medium whitespace-nowrap ${featured ? 'bg-orange-500' : 'bg-purple-600'}`}>
-                        {meta.badge}
-                      </span>
-                    )}
-
-                    <div className={`flex items-center justify-center h-14 w-14 rounded-2xl mx-auto mb-3 ${meta.color === 'blue' ? 'bg-blue-100 text-blue-600' : meta.color === 'orange' ? 'bg-orange-100 text-orange-600' : 'bg-purple-100 text-purple-600'}`}>
-                      <meta.Icon />
-                    </div>
-                    <h3 className="text-2xl font-semibold text-center mb-1">{plan.display_name}</h3>
-                    <p className="text-gray-500 text-sm text-center mb-5">{plan.description}</p>
-
-                    {/* Price */}
-                    <div className="text-center mb-6">
-                      <span className="text-4xl font-extrabold text-gray-900">{plan.price_sar.toLocaleString()}</span>
-                      <span className="text-gray-400 text-sm"> ريال</span>
-                      <span className="text-gray-400 text-sm"> / سنة</span>
-                      <div className="text-xs text-gray-400 mt-1">
-                        ما يعادل {Math.round(plan.price_sar / 12).toLocaleString()} ريال / شهر
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    <ul className="space-y-2.5 flex-1 mb-8">
-                      <li className="flex items-center gap-3 text-gray-700 font-medium">
-                        <span className="text-green-500"><CheckIcon /></span>
-                        {plan.max_doctors === -1 ? 'عدد غير محدود من الأطباء' : `${plan.max_doctors === 1 ? 'طبيب واحد' : `حتى ${plan.max_doctors} أطباء`}`}
-                      </li>
-                      <li className="flex items-center gap-3 text-gray-700 font-medium">
-                        <span className="text-green-500"><CheckIcon /></span>
-                        {plan.max_patients_per_doctor === -1 ? 'عدد غير محدود من المرضى' : `${plan.max_patients_per_doctor} مريضاً لكل طبيب`}
-                      </li>
-                      {['خطط علاجية مخصصة', 'متابعة التمارين عن بُعد', 'تقارير التقدم', 'تطبيق جوال للأهالي', 'إشعارات فورية', 'مقالات التوعية'].map(f => (
-                        <li key={f} className="flex items-center gap-3 text-gray-700">
-                          <span className="text-green-500"><CheckIcon /></span>
-                          {f}
-                        </li>
-                      ))}
-                      {plan.plan_type === 'unlimited' && (
-                        <li className="flex items-center gap-3 text-purple-700 font-medium">
-                          <span className="text-purple-500">
-                            <svg className="h-5 w-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                            </svg>
-                          </span>
-                          أولوية في طلبات الميزات الجديدة
-                        </li>
-                      )}
-                    </ul>
-
-                    <button
-                      onClick={() => handlePlanClick(plan.plan_type)}
-                      className={`w-full py-3.5 text-white rounded-xl transition-colors font-semibold text-base ${meta.btnCls}`}
-                    >
-                      {meta.hasTrial ? 'ابدأ التجربة المجانية' : 'ابدأ الآن'}
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            /* Fallback skeleton while loading */
-            <div className="grid md:grid-cols-3 gap-8">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="rounded-2xl border-2 border-gray-100 p-8 animate-pulse">
-                  <div className="h-10 w-10 bg-gray-200 rounded-full mx-auto mb-4" />
-                  <div className="h-5 bg-gray-200 rounded w-2/3 mx-auto mb-2" />
-                  <div className="h-4 bg-gray-100 rounded w-1/2 mx-auto mb-6" />
-                  <div className="h-8 bg-gray-200 rounded w-1/3 mx-auto mb-6" />
-                  <div className="space-y-2 mb-8">
-                    {[1,2,3,4].map(j => <div key={j} className="h-4 bg-gray-100 rounded" />)}
-                  </div>
-                  <div className="h-11 bg-gray-200 rounded-xl" />
+          {/* Team */}
+          <h3 className="text-2xl font-bold text-center mb-8">الفريق</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: 'Abdulrahman Dhaifallah',
+                github: 'https://github.com/iid7oomii',
+                linkedin: '#',
+                twitter: '#',
+                photo: photoAbdulrahman,
+              },
+              {
+                name: 'Abdullah Alsalem',
+                github: 'https://github.com/ABDULLAHALSALEM',
+                linkedin: '#',
+                twitter: '#',
+                photo: photoAbdullah,
+              },
+              {
+                name: 'Khalid Alomari',
+                github: 'https://github.com/KMSAAO',
+                linkedin: '#',
+                twitter: '#',
+                photo: photoKhalid,
+              },
+            ].map((member) => (
+              <div key={member.name} className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-center hover:shadow-md transition-shadow">
+                <div className="h-40 w-40 rounded-full overflow-hidden mx-auto mb-4 bg-gradient-to-br from-blue-500 to-orange-500 flex items-center justify-center">
+                  {member.photo
+                    ? <img src={member.photo} alt={member.name} className="w-full h-full object-cover object-top" />
+                    : <span className="text-white text-3xl font-bold">{member.name[0]}</span>
+                  }
                 </div>
-              ))}
-            </div>
-          )}
-          </div>{/* end opacity wrapper */}
-          </div>{/* end relative overlay wrapper */}
+                <h4 className="font-semibold text-gray-900 mb-4">{member.name}</h4>
+                <div className="flex justify-center gap-3">
+                  {/* GitHub */}
+                  <a href={member.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+                    className="h-9 w-9 rounded-xl bg-gray-900 hover:bg-gray-700 flex items-center justify-center transition-colors">
+                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                  </a>
+                  {/* LinkedIn */}
+                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+                    className="h-9 w-9 rounded-xl bg-blue-700 hover:bg-blue-800 flex items-center justify-center transition-colors">
+                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                  </a>
+                  {/* Twitter / X */}
+                  <a href={member.twitter} target="_blank" rel="noopener noreferrer" aria-label="X"
+                    className="h-9 w-9 rounded-xl bg-black hover:bg-gray-800 flex items-center justify-center transition-colors">
+                    <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L2.034 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* GitHub Repo */}
+          <div className="mt-10 text-center">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-6 py-3 bg-gray-900 hover:bg-gray-700 text-white rounded-xl transition-colors font-medium"
+            >
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+              </svg>
+              عرض المستودع على GitHub
+            </a>
+          </div>
         </div>
       </section>
 

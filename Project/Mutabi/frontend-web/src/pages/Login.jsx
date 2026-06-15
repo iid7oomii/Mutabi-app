@@ -81,7 +81,6 @@ export default function Login() {
         return
       }
 
-      await fetchUser()
       // SUBSCRIPTION CHECK DISABLED
       // const loggedInUser = await fetchUser()
       // const { subscription } = useAuthStore.getState()
@@ -89,6 +88,7 @@ export default function Login() {
       //   setNoSubscription(true)
       //   return
       // }
+      await fetchUser()
 
     } catch {
       setError('تعذر الاتصال بالخادم')

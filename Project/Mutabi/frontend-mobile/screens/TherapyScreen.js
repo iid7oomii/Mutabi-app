@@ -201,41 +201,47 @@ export default function TherapyScreen({ onTabPress }) {
         ) : (
 					exercises.map((ex, i) => {
 						const status = getStatus(ex, i)
+						const isCompleted = status === 'completed'
+						const CardWrapper = isCompleted ? View : TouchableOpacity
 						return (
-							<TouchableOpacity
+							<CardWrapper
 								key={ex.id}
-								style={styles.cardBlue}
+								style={[styles.cardBlue, isCompleted && styles.cardCompleted]}
 								activeOpacity={0.8}
-								onPress={() => navigation.navigate('ExerciseDetail', { exercise: ex, isCompleted: status === 'completed' })}
+								onPress={isCompleted ? undefined : () => navigation.navigate('ExerciseDetail', { exercise: ex, isCompleted: false })}
 							>
 								<View style={styles.cardTop}>
 									<View style={[styles.iconWrap, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-										<Ionicons name={ex.exercise_icon || ICONS[i % ICONS.length]} size={22} color="#fff" />
+										<Ionicons name={ex.exercise_icon || ICONS[i % ICONS.length]} size={22} color={isCompleted ? '#a5d6a7' : '#fff'} />
 									</View>
 									<StatusBadge status={status} />
 								</View>
-								<Text style={styles.cardTitleWhite}>{ex.exercise_title}</Text>
-								<Text style={styles.cardDescWhite} numberOfLines={2}>{ex.exercise_description}</Text>
+								<Text style={[styles.cardTitleWhite, isCompleted && { color: '#c8e6c9' }]}>{ex.exercise_title}</Text>
+								<Text style={[styles.cardDescWhite, isCompleted && { color: '#a5d6a7' }]} numberOfLines={2}>{ex.exercise_description}</Text>
 								<View style={styles.cardFooter}>
 									{ex.duration_minutes ? (
 										<View style={styles.durationRow}>
-											<Ionicons name="time-outline" size={13} color="#cce0ff" />
-											<Text style={[styles.durationText, { color: '#cce0ff' }]}>{ex.duration_minutes} mins</Text>
+											<Ionicons name="time-outline" size={13} color={isCompleted ? '#a5d6a7' : '#cce0ff'} />
+											<Text style={[styles.durationText, { color: isCompleted ? '#a5d6a7' : '#cce0ff' }]}>{ex.duration_minutes} mins</Text>
 										</View>
 									) : <View />}
-									<TouchableOpacity
-												style={[styles.actionBtn, status === 'completed' && styles.actionBtnGrey]}
-												onPress={() => navigation.navigate('ExerciseDetail', {
-													exercise: ex,
-													isCompleted: status === 'completed',
-												})}
-											>
-										<Text style={[styles.actionText, status === 'completed' && { color: '#555' }]}>
-											{getActionLabel(status)}
-										</Text>
-									</TouchableOpacity>
+									{isCompleted ? (
+										<View style={styles.completedTag}>
+											<Ionicons name="checkmark-circle" size={14} color="#2E7D32" />
+											<Text style={styles.completedTagText}>مكتمل</Text>
+										</View>
+									) : (
+										<TouchableOpacity
+											style={[styles.actionBtn, status === 'upcoming' ? {} : styles.actionBtnGrey]}
+											onPress={() => navigation.navigate('ExerciseDetail', { exercise: ex, isCompleted: false })}
+										>
+											<Text style={[styles.actionText, status !== 'upcoming' && { color: '#555' }]}>
+												{getActionLabel(status)}
+											</Text>
+										</TouchableOpacity>
+									)}
 								</View>
-							</TouchableOpacity>
+							</CardWrapper>
 						)
 					})
         )}
@@ -277,5 +283,8 @@ const styles = StyleSheet.create({
   actionText:       { color: '#fff', fontSize: 13, fontWeight: '600' },
   emptyCard:        { alignItems: 'center', padding: 40, gap: 12 },
   emptyText:        { color: '#aaa', fontSize: 14 },
-	cardBlue: { backgroundColor: BLUE, borderRadius: 16, padding: 16, marginBottom: 14, shadowColor: '#1F6FEB', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+	cardBlue:         { backgroundColor: BLUE, borderRadius: 16, padding: 16, marginBottom: 14, shadowColor: '#1F6FEB', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
+  cardCompleted:    { backgroundColor: '#388E3C', shadowColor: '#388E3C', opacity: 0.85 },
+  completedTag:     { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#E8F5E9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
+  completedTagText: { fontSize: 13, fontWeight: '700', color: '#2E7D32' },
 })
