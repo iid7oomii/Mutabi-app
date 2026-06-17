@@ -32,7 +32,7 @@ class ChildrenService:
         if not ClinicRepository.get_by_id(clinic_id):
             raise ValueError("Clinic not found")
 
-        SubscriptionService.check_patient_limit(clinic_id, data["doctor_id"])
+        # SubscriptionService.check_patient_limit(clinic_id, data["doctor_id"])
 
         child = ChildrenRepository.create({
             "clinic_id": clinic_id,
