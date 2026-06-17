@@ -13,7 +13,6 @@ export default function MainTabs({ navigation }) {
   return (
     <SafeAreaView style={styles.container} edges={[]}>
       <View style={styles.content}>
-        {/* Render all tabs but show only the active one */}
         <View style={[styles.tab, activeTab === 'Home'     && styles.visible]}>
           <HomeScreen onTabPress={setActiveTab} activeTab={activeTab} />
         </View>

@@ -14,6 +14,7 @@ from app.models.Plan_Exercises import PlanExercises
 from app.models.Therapy_plans import TherapyPlans
 from app.models.Appointments import Appointments
 from app.models.Doctor_Notes import DoctorNotes
+from app.models.Notification import Notification
 from app.integrations.email import ResendEmailClient
 from app.services.subscription_service import SubscriptionService
 
@@ -192,6 +193,7 @@ class ChildrenService:
         if not has_other_children:
             parent = db.session.get(Users, parent_id)
             if parent:
+                db.session.query(Notification).filter_by(user_id=parent_id).delete(synchronize_session=False)
                 db.session.delete(parent)
 
         db.session.commit()
