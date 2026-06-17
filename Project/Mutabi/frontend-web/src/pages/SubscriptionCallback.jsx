@@ -63,7 +63,6 @@ export default function SubscriptionCallback() {
       .catch(() => setStatus('error'))
   }, [])
 
-  // Countdown + redirect on success
   useEffect(() => {
     if (status !== 'success') return
     if (countdown <= 0) {
