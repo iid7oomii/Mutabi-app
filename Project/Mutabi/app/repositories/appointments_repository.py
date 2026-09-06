@@ -1,7 +1,7 @@
 from app.models.Appointments import Appointments
 from app import db
 from typing import List, Optional
-from datetime import date
+from datetime import date, datetime, timedelta
 
 
 class AppointmentsRepository:
@@ -65,3 +65,29 @@ class AppointmentsRepository:
         db.session.delete(appointment)
         db.session.commit()
         return True
+
+    @staticmethod
+    def get_by_doctor_between(appointment_date: datetime, doctor_id: str) -> List[Appointments]:
+        start_time = appointment_date - timedelta(minutes=40)
+        end_time = appointment_date + timedelta(minutes=40)
+
+        return (
+            db.session.query(Appointments)
+            .filter_by(doctor_id=doctor_id)
+            .where(Appointments.appointment.between(start_time, end_time))
+            .order_by(Appointments.appointment.asc())
+            .all()
+        )
+
+    @staticmethod
+    def get_by_child_between(appointment_date: datetime, child_id: str) -> List[Appointments]:
+        start_time = appointment_date - timedelta(minutes=40)
+        end_time = appointment_date + timedelta(minutes=40)
+
+        return (
+            db.session.query(Appointments)
+            .filter_by(child_id=child_id)
+            .where(Appointments.appointment.between(start_time, end_time))
+            .order_by(Appointments.appointment.asc())
+            .all()
+        )
