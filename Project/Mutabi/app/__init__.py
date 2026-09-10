@@ -15,13 +15,18 @@ ALLOWED_ORIGINS = [
     "https://www.mutabi.app",
 ]
 
-def create_app():
+def create_app(config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
     "pool_recycle": 280,
 }
+
+    if config:
+        app.config.update(config)
+
+
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)

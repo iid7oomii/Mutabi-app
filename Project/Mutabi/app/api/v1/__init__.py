@@ -15,6 +15,7 @@ from app.api.v1.notifications.notifications_routes import notifications_bp
 from app.api.v1.articles.articles_routes import articles_bp
 from app.api.v1.subscriptions.subscription_routes import subscriptions_bp
 from app.api.v1.admin.admin_routes import admin_bp
+from app.clinic_leads.routes import clinic_leads_bp
 
 api_v1 = Blueprint('api_v1', __name__, url_prefix='/api/v1')
 
@@ -34,3 +35,4 @@ api_v1.register_blueprint(articles_bp)
 api_v1.register_blueprint(contact_bp)
 api_v1.register_blueprint(subscriptions_bp)
 api_v1.register_blueprint(admin_bp)
+api_v1.register_blueprint(clinic_leads_bp)

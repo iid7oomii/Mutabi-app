@@ -101,17 +101,29 @@ The request should fail with an integration error response so the user is not to
 
 # Submit Clinic Lead Validation Rules
 
-### VR-01 - Clinic Name Must Be a Non-Empty String
+### VR-01 - Clinic Name Must Be a Valid Length String
 
 clinic_name must be provided as a string value.
+
+Leading and trailing whitespace must be trimmed before validation.
+
+Internal spaces are allowed and must be preserved.
+
+After trimming, clinic_name must be at least 2 characters and no more than 100 characters.
 
 Empty strings and whitespace-only values are invalid.
 
 ---
 
-### VR-02 - Contact Name Must Be a Non-Empty String
+### VR-02 - Contact Name Must Be a Valid Length String
 
 contact_name must be provided as a string value.
+
+Leading and trailing whitespace must be trimmed before validation.
+
+Internal spaces are allowed and must be preserved.
+
+After trimming, contact_name must be at least 2 characters and no more than 50 characters.
 
 Empty strings and whitespace-only values are invalid.
 
@@ -121,13 +133,27 @@ Empty strings and whitespace-only values are invalid.
 
 email must be provided as a string value using a valid email format.
 
+Leading and trailing whitespace must be trimmed before validation.
+
+The email must not exceed 254 characters after trimming.
+
 Invalid or malformed email addresses must be rejected.
 
 ---
 
 ### VR-04 - Phone Must Match an Accepted Saudi Format
 
-phone must match one of the accepted Saudi contact number formats.
+phone must be provided as a string value.
+
+Leading and trailing whitespace must be trimmed before validation.
+
+Internal spaces and hyphens are allowed for user convenience.
+
+For validation only, spaces and hyphens must be removed from a temporary cleaned copy of the phone number.
+
+The original trimmed phone value must be preserved and sent to n8n.
+
+The cleaned phone value must match one of the accepted Saudi contact number formats.
 
 Accepted mobile formats:
 
@@ -178,6 +204,12 @@ The city must match a value from the approved Saudi cities and major governorate
 notes is optional.
 
 If provided, it must contain a string value.
+
+Leading and trailing whitespace must be trimmed before validation.
+
+Internal spaces and line breaks are allowed and must be preserved.
+
+After trimming, notes must not exceed 1000 characters.
 
 Non-string values must be rejected.
 
