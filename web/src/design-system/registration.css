@@ -1,0 +1,32 @@
+.mt-registration{max-width:980px}
+.mt-registration-intro{display:flex;align-items:flex-start;gap:11px;margin-bottom:20px;padding:13px 16px;border:1px solid var(--mutabi-border);border-radius:12px;background:var(--mutabi-blue-soft);color:var(--mutabi-text)}
+.mt-registration-intro>span{display:grid;place-items:center;flex:none;color:var(--mutabi-blue)}
+.mt-registration-intro p{margin:0;font-size:12px;line-height:1.8}
+.mt-registration-message{margin-bottom:16px}
+.mt-registration-message .mt-message span{display:flex;align-items:center;gap:7px}
+.mt-registration-card{margin-bottom:16px;border:1px solid var(--mutabi-border);border-radius:var(--mutabi-radius-card);background:var(--mutabi-surface);overflow:hidden}
+.mt-registration-card__head{display:flex;align-items:center;gap:12px;padding:19px 22px;border-bottom:1px solid var(--mutabi-border)}
+.mt-registration-card__head>div{flex:1;min-width:0}
+.mt-registration-card__head h2{margin:0;font-size:17px;line-height:1.5}
+.mt-registration-card__head p{margin:2px 0 0;color:var(--mutabi-muted);font-size:12px}
+.mt-registration-card__icon{display:grid;place-items:center;flex:none;width:39px;height:39px;border-radius:11px;background:var(--mutabi-blue-soft);color:var(--mutabi-blue)}
+.mt-registration-card__icon--orange{background:var(--mutabi-orange-soft);color:var(--mutabi-orange-text)}
+.mt-registration-step{color:var(--mutabi-muted);font-size:12px;font-weight:700}
+.mt-registration-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 20px;padding:22px}
+.mt-registration-field{display:grid;align-content:start;gap:7px;min-width:0}
+.mt-registration-field--wide{grid-column:1/-1}
+.mt-registration-field label{font-size:12px;font-weight:700;color:var(--mutabi-text)}
+.mt-registration-field label span{color:var(--mutabi-orange-text)}
+.mt-registration-field input,.mt-registration-field select,.mt-registration-field textarea{width:100%;min-height:45px;padding:10px 12px;border:1px solid var(--mutabi-border);border-radius:10px;outline:0;background:var(--mutabi-surface);color:var(--mutabi-text);font:inherit;font-size:13px}
+.mt-registration-field textarea{min-height:104px;resize:vertical;line-height:1.7}
+.mt-registration-field input:focus,.mt-registration-field select:focus,.mt-registration-field textarea:focus{border-color:var(--mutabi-blue);box-shadow:0 0 0 3px var(--mutabi-blue-soft)}
+.mt-registration-field input::placeholder,.mt-registration-field textarea::placeholder{color:var(--mutabi-muted)}
+.mt-registration-field input[dir="ltr"]{text-align:right}
+.mt-registration-field small{color:var(--mutabi-muted);font-size:11px}
+.mt-registration-assignee{display:flex;align-items:center;align-self:end;gap:8px;min-height:45px;padding:10px 12px;border:1px solid var(--mutabi-border);border-radius:10px;background:var(--mutabi-canvas);color:var(--mutabi-muted);font-size:12px}
+.mt-registration-assignee svg{color:var(--mutabi-blue);flex:none}
+.mt-registration-actions{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:23px}
+.mt-registration-actions>span{color:var(--mutabi-muted);font-size:11px}
+.mt-registration-actions>div{display:flex;gap:9px}
+@media(max-width:690px){.mt-registration-grid{gap:15px;padding:17px}.mt-registration-card__head{padding:16px}.mt-registration-actions{align-items:stretch;flex-direction:column}.mt-registration-actions>div .mt-button{flex:1}}
+@media(max-width:460px){.mt-registration-grid{grid-template-columns:1fr}.mt-registration-field--wide{grid-column:auto}.mt-registration-card__head p{font-size:11px}}

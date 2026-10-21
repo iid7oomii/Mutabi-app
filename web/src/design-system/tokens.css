@@ -1,0 +1,48 @@
+/* Generated from design-system/tokens.json. */
+.mutabi-theme {
+  --mutabi-canvas: #F6F9FD;
+  --mutabi-surface: #FFFFFF;
+  --mutabi-text: #18304A;
+  --mutabi-muted: #5D7084;
+  --mutabi-border: #E2EAF2;
+  --mutabi-blue: #1F6FEB;
+  --mutabi-blue-soft: #EAF3FF;
+  --mutabi-orange: #E76F2E;
+  --mutabi-orange-on: #12263A;
+  --mutabi-orange-text: #A84412;
+  --mutabi-orange-soft: #FFF0E5;
+  --mutabi-success: #2E7D32;
+  --mutabi-error: #B42318;
+  --mutabi-space-xs: 4px;
+  --mutabi-space-sm: 8px;
+  --mutabi-space-md: 12px;
+  --mutabi-space-lg: 16px;
+  --mutabi-space-xl: 20px;
+  --mutabi-space-xxl: 24px;
+  --mutabi-space-xxxl: 32px;
+  --mutabi-radius-sm: 8px;
+  --mutabi-radius-button: 12px;
+  --mutabi-radius-card: 15px;
+  --mutabi-radius-phone: 32px;
+  --mutabi-type-page: 24px;
+  --mutabi-type-section: 18px;
+  --mutabi-type-card: 16px;
+  --mutabi-type-body: 14px;
+  --mutabi-type-support: 12px;
+  --mutabi-type-tiny: 11px;
+}
+.mutabi-theme[data-mutabi-theme="dark"] {
+  --mutabi-canvas: #121B29;
+  --mutabi-surface: #1C293A;
+  --mutabi-text: #F0F5FB;
+  --mutabi-muted: #B8C7D8;
+  --mutabi-border: #34465B;
+  --mutabi-blue: #83B9FF;
+  --mutabi-blue-soft: #263E5A;
+  --mutabi-orange: #FF9B56;
+  --mutabi-orange-on: #102438;
+  --mutabi-orange-text: #FFB782;
+  --mutabi-orange-soft: #493727;
+  --mutabi-success: #8BD39A;
+  --mutabi-error: #FF9B94;
+}

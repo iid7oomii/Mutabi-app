@@ -1,0 +1,49 @@
+import { useState } from 'react'
+import { ArrowRight, CalendarDays, ChartNoAxesCombined, CircleCheck, CircleX, ClipboardList, MessageSquareText, Plus, Search, Target, X } from 'lucide-react'
+import { Button, EmptyState, GoalCard, Message } from '../../../design-system/components'
+const dayOptions = [['sunday','الأحد'],['monday','الاثنين'],['tuesday','الثلاثاء'],['wednesday','الأربعاء'],['thursday','الخميس'],['friday','الجمعة'],['saturday','السبت']]
+const statuses = { completed: 'مكتمل', partially_completed: 'جزئي', skipped: 'لم يُنفذ' }
+const dateFormatter = new Intl.DateTimeFormat('ar-SA-u-ca-gregory', { day: 'numeric', month: 'short', year: 'numeric' })
+function formatDate(value) { if (!value) return '—'; const date = new Date(value); return Number.isNaN(date.getTime()) ? '—' : dateFormatter.format(date) }
+const emptyGoal = { title: '', success_criteria: '', target_date: '', notes: '' }
+export default function ProgressView({ mode = 'all', childName = '', data = {}, feedback = [], goals = [], loading = false, error = '', onBack, onOpenFeedback, onOpenChild, onCreateGoal }) {
+  const [search, setSearch] = useState('')
+  const [goalFormOpen, setGoalFormOpen] = useState(false)
+  const [goalForm, setGoalForm] = useState(emptyGoal)
+  const [goalError, setGoalError] = useState('')
+  const [goalSaving, setGoalSaving] = useState(false)
+  const submitGoal = async event => {
+    event.preventDefault()
+    setGoalError('')
+    if (!goalForm.title.trim() || !goalForm.success_criteria.trim()) {
+      setGoalError('أدخل عنوان الهدف ومعيار النجاح.')
+      return
+    }
+    setGoalSaving(true)
+    try {
+      await onCreateGoal({ title: goalForm.title.trim(), success_criteria: goalForm.success_criteria.trim(), target_date: goalForm.target_date || null, notes: goalForm.notes.trim() || null })
+      setGoalForm(emptyGoal)
+      setGoalFormOpen(false)
+    } catch (cause) {
+      setGoalError(cause.message || 'تعذر حفظ الهدف. حاول مجددًا.')
+    } finally {
+      setGoalSaving(false)
+    }
+  }
+  const completed = feedback.filter(item => item.completion_status === 'completed').length
+  const skipped = feedback.filter(item => item.completion_status === 'skipped').length
+  const rate = feedback.length ? Math.round(completed / feedback.length * 100) : 0
+  const filtered = feedback.filter(item => `${item.exercise_title || ''} ${item.child_name || ''} ${item.parent_name || ''}`.toLocaleLowerCase('ar').includes(search.trim().toLocaleLowerCase('ar')))
+  const counts = dayOptions.map(([key, label]) => ({ key, label, count: feedback.filter(item => item.target_days === key && item.completion_status === 'completed').length }))
+  const maxCount = Math.max(1, ...counts.map(item => item.count))
+  const latest = mode === 'child' ? feedback.find(item => item.parent_notes) : null
+  return <div className="mt-dash-content mt-progress">{onBack && <button type="button" className="mt-detail-back" onClick={onBack}><ArrowRight size={16} /> {mode === 'child' ? 'ملف الطفل' : 'العودة'}</button>}<header className="mt-dash-header"><div><span className="mt-dash-eyebrow">المتابعة العلاجية</span><h1>{mode === 'child' ? `تقدم ${childName || 'الطفل'}` : 'التقدم'}</h1><p>{mode === 'child' ? 'نظرة على تنفيذ التمارين وملاحظات الأسرة لهذا الطفل.' : 'ملخص تنفيذ التمارين لجميع أطفال العيادة.'}</p></div></header>{error && <div className="mt-notes-message"><Message tone="error">{error}</Message></div>}
+    <div className="mt-progress-metrics"><div><span><ChartNoAxesCombined size={19} /></span><small>{mode === 'child' ? 'نسبة إتمام التمارين' : 'متوسط الالتزام'}</small><strong>{mode === 'child' ? rate : (data.adherence_rate ?? 0)}٪</strong><p>{mode === 'child' ? `${completed} من ${feedback.length} تقارير مكتملة` : `${data.total_patients ?? 0} أطفال في العيادة`}</p></div><div><span className="is-orange"><CircleX size={19} /></span><small>{mode === 'child' ? 'تمارين لم تُنفذ' : 'أطفال بلا خطة'}</small><strong>{mode === 'child' ? skipped : (data.pending_plans ?? 0)}</strong><p>{mode === 'child' ? `من ${feedback.length} تقارير` : 'بحاجة إلى خطة علاجية'}</p></div></div>
+    {mode === 'child' && <section className="mt-progress-goals"><div className="mt-progress-section-head"><div><h2>الأهداف العلاجية</h2><p>أهداف واضحة يمكن متابعة تحققها مع الأسرة.</p></div><div className="mt-progress-goals__actions"><span>{goals.length} أهداف</span>{onCreateGoal && <Button type="button" onClick={() => { setGoalError(''); setGoalFormOpen(true) }}><Plus size={16} /> إضافة هدف</Button>}</div></div>
+      {goalFormOpen && <div className="mt-goal-dialog-backdrop" onMouseDown={event => { if (event.target === event.currentTarget && !goalSaving) setGoalFormOpen(false) }}><div className="mt-goal-dialog" role="dialog" aria-modal="true" aria-labelledby="mt-goal-dialog-title" dir="rtl"><div className="mt-goal-dialog__head"><span className="mt-goal-dialog__icon"><Target size={22} /></span><button type="button" aria-label="إغلاق" onClick={() => setGoalFormOpen(false)} disabled={goalSaving}><X size={19} /></button></div><h2 id="mt-goal-dialog-title">إضافة هدف علاجي</h2><p>حدّد ما نريد تحقيقه وكيف سنعرف أن الهدف تحقق.</p><form onSubmit={submitGoal}><label>عنوان الهدف <span>*</span><input autoFocus required maxLength={160} value={goalForm.title} onChange={event => setGoalForm(current => ({ ...current, title: event.target.value }))} placeholder="مثال: الوقوف بتوازن لمدة دقيقة" /></label><label>معيار النجاح <span>*</span><textarea required maxLength={300} rows={2} value={goalForm.success_criteria} onChange={event => setGoalForm(current => ({ ...current, success_criteria: event.target.value }))} placeholder="مثال: الوقوف دون مساعدة لمدة 60 ثانية في 3 محاولات" /></label><label>التاريخ المستهدف <small>اختياري</small><input type="date" min={new Date().toISOString().slice(0, 10)} value={goalForm.target_date} onChange={event => setGoalForm(current => ({ ...current, target_date: event.target.value }))} /></label><label>ملاحظات للأخصائي <small>اختياري</small><textarea maxLength={2000} rows={2} value={goalForm.notes} onChange={event => setGoalForm(current => ({ ...current, notes: event.target.value }))} placeholder="تفاصيل إضافية تساعد في المتابعة" /></label>{goalError && <Message tone="error">{goalError}</Message>}<div className="mt-goal-dialog__actions"><Button type="button" variant="secondary" onClick={() => setGoalFormOpen(false)} disabled={goalSaving}>إلغاء</Button><Button type="submit" loading={goalSaving}>حفظ الهدف</Button></div></form></div></div>}
+      {loading ? <div className="mt-dash-loading">جارٍ تحميل الأهداف…</div> : goals.length ? <div className="mt-progress-goal-list">{goals.map(goal => <GoalCard key={goal.id} title={goal.title} status={goal.status} remaining={goal.remaining} criteria={goal.success_criteria} endDate={goal.target_date ? `التاريخ المستهدف: ${formatDate(goal.target_date)}` : goal.endDate || goal.end_date} />)}</div> : <EmptyState icon={CircleCheck} title="لا توجد أهداف مرتبطة بهذا الطفل بعد" description="أضف هدفًا واضحًا لتبدأ متابعة التقدم نحو تحقيقه." action={onCreateGoal && <Button type="button" variant="secondary" onClick={() => setGoalFormOpen(true)}><Plus size={16} /> إضافة أول هدف</Button>} />}</section>}
+    <section className="mt-progress-chart"><div className="mt-progress-section-head"><h2>تنفيذ التمارين حسب اليوم</h2><p>عدد التقارير المكتملة لكل يوم من الأسبوع.</p></div>{loading ? <div className="mt-dash-loading">جارٍ تحميل التقدم…</div> : feedback.length ? <div className="mt-progress-bars">{counts.map(item => <div key={item.key}><strong>{item.count}</strong><span style={{ height: `${Math.max(item.count / maxCount * 100, 5)}%` }} /><small>{item.label}</small></div>)}</div> : <EmptyState icon={ChartNoAxesCombined} title="لا توجد بيانات كافية للرسم" description="سيظهر توزيع التنفيذ عندما تصل تقارير التمارين." />}</section>
+    <section className="mt-progress-sessions"><div className="mt-progress-section-head"><div><h2>سجل التمارين</h2><p>تقارير التنفيذ الواردة من الأسرة.</p></div><span>{feedback.length} تقرير</span></div><div className="mt-progress-search"><label className="mt-patients-search"><Search size={17} /><input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="ابحث عن تمرين أو طفل" aria-label="البحث في سجل التمارين" /></label></div>{loading ? <div className="mt-dash-loading">جارٍ تحميل التقارير…</div> : filtered.length ? <div className="mt-progress-rows">{filtered.map(item => <article key={item.id} className="mt-progress-row"><span className="mt-progress-row__icon"><ClipboardList size={18} /></span><div><strong>{item.exercise_title || 'تمرين علاجي'}</strong><small>{mode === 'all' ? `${item.child_name || 'طفل'} · ` : ''}{formatDate(item.feedback_date)}{item.parent_name ? ` · ${item.parent_name}` : ''}</small></div><span className={`mt-progress-status mt-progress-status--${item.completion_status || 'unknown'}`}>{statuses[item.completion_status] || 'غير محدد'}</span><small className="mt-progress-pain">{item.pain_level != null ? `الألم ${item.pain_level}/10` : '—'}</small><button type="button" onClick={() => mode === 'child' ? onOpenFeedback(item.id) : onOpenChild(item.child_id)}>{mode === 'child' ? 'عرض التقرير' : 'تقدم الطفل'}</button></article>)}</div> : <EmptyState icon={CalendarDays} title={search ? 'لا توجد تقارير مطابقة' : 'لا توجد تقارير تنفيذ بعد'} description={search ? 'غيّر عبارة البحث.' : 'ستظهر تقارير الأسرة هنا بعد إرسالها.'} />}</section>
+    {latest && <section className="mt-progress-latest"><div className="mt-progress-section-head"><h2><MessageSquareText size={18} /> آخر ملاحظة من الأسرة</h2><small>{formatDate(latest.feedback_date)}</small></div><p>{latest.parent_notes}</p>{latest.parent_media_url && <a href={latest.parent_media_url} target="_blank" rel="noreferrer">عرض المرفق</a>}<Button type="button" variant="secondary" onClick={() => onOpenFeedback(latest.id)}><CircleCheck size={16} /> عرض التقرير</Button></section>}
+  </div>
+}
