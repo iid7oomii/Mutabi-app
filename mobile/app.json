@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "متابع",
+    "slug": "frontend-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": false,
+    "splash": {
+      "image": "./src/assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.kmsao.mutabi"
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2b947be6-1ee6-4e7e-bcf5-a00864f85d93"
+      }
+    },
+    "owner": "kmsao",
+    "plugins": [
+      "expo-video",
+      "expo-font"
+    ]
+  }
+}
